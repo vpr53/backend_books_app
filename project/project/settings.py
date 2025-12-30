@@ -132,3 +132,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 AUTH_USER_MODEL = 'users.User'
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "bookok@mail.com"
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 24 часа

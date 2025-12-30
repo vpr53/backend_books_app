@@ -7,7 +7,14 @@ class UserManager(BaseUserManager):
             raise ValueError("Email обязателен")
         
         email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+
+        user = self.model(
+        email=email,
+        is_active=False,              
+        is_email_verified=False,      
+        **extra_fields
+        )        
+        
         user.set_password(password)
         user.save()
         return user
@@ -20,8 +27,11 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
-    is_active = models.BooleanField(default=True)
+
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
+
     data_joined = models.DateTimeField(auto_now_add=True)
 
     objects = UserManager()
