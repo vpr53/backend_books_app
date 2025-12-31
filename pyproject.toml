@@ -13,10 +13,35 @@ dependencies = [
     "psycopg (>=3.3.2,<4.0.0)",
     "djangorestframework-simplejwt (>=5.5.1,<6.0.0)",
     "python-decouple (>=3.8,<4.0)",
-    "rest-framework-simplejwt (>=0.0.2,<0.0.3)"
+    "rest-framework-simplejwt (>=0.0.2,<0.0.3)",
+    "ruff (>=0.14.10,<0.15.0)"
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+# Что проверять
+select = [
+    "E",   # ошибки PEP8
+    "F",   # ошибки (unused imports, undefined names)
+    "I",   # сортировка импортов
+    "DJ",  # Django-правила
+]
+
+# Что игнорировать
+ignore = [
+    "DJ001",  # allow null=True on CharField
+]
+
+# Какие папки не трогать
+exclude = [
+    ".venv",
+    "migrations",
+    "__pycache__",
+]

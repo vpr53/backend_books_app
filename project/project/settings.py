@@ -1,7 +1,7 @@
-from pathlib import Path
-from decouple import config
 from datetime import timedelta
+from pathlib import Path
 
+from decouple import config
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),

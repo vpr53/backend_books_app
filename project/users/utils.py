@@ -1,9 +1,9 @@
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.conf import settings
-from django.utils.timezone import now
-from django.contrib.auth.tokens import default_token_generator
 from django.urls import reverse
+from django.utils.timezone import now
 
 
 def send_verification_email(user, request):
