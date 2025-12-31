@@ -19,10 +19,13 @@ class UserManager(BaseUserManager):
         user.save()
         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-        return self.create_user(email, password, **extra_fields)
+def create_superuser(self, email, password=None, **extra_fields):
+    extra_fields.setdefault("is_staff", True)
+    extra_fields.setdefault("is_superuser", True)
+    extra_fields.setdefault("is_active", True)
+    extra_fields.setdefault("is_email_verified", True)
+
+    return self.create_user(email, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -32,7 +35,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
 
-    data_joined = models.DateTimeField(auto_now_add=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
 
     objects = UserManager()
 
