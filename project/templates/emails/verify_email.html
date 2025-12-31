@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Подтверждение email</title>
+</head>
+<body style="margin:0; padding:0; background:#f4f6f8; font-family:Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td align="center" style="padding:40px 0;">
+                <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background:#4f46e5; padding:20px; text-align:center; color:#ffffff;">
+                            <h1 style="margin:0;">BookOK 📚</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding:30px; color:#333;">
+                            <h2>Подтвердите ваш email</h2>
+                            <p>
+                                Вы зарегистрировались в <strong>BookOK</strong>.
+                                Чтобы активировать аккаунт, нажмите кнопку ниже:
+                            </p>
+
+                            <div style="text-align:center; margin:30px 0;">
+                                <a href="{{ verify_url }}"
+                                   style="background:#4f46e5; color:#ffffff; padding:14px 28px;
+                                          text-decoration:none; border-radius:6px; font-weight:bold;">
+                                    Подтвердить email
+                                </a>
+                            </div>
+
+                            <p style="font-size:14px; color:#666;">
+                                Если кнопка не работает, скопируйте ссылку:
+                            </p>
+                            <p style="font-size:12px; word-break:break-all; color:#555;">
+                                {{ verify_url }}
+                            </p>
+
+                            <p style="margin-top:30px;">
+                                Если вы не регистрировались — просто проигнорируйте это письмо.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background:#f4f6f8; padding:15px; text-align:center; font-size:12px; color:#888;">
+                            © {{ year }} BookOK. Все права защищены.
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

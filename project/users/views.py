@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.tokens import default_token_generator
 from rest_framework import generics
 from .serializers import RegisterSerializer
 from .models import User
-from .tokens import email_verification_token
 from .utils import send_verification_email
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -59,7 +59,7 @@ class VerifyEmailView(APIView):
                 status=status.HTTP_200_OK
             )
 
-        if not email_verification_token.check_token(user, token):
+        if not default_token_generator.check_token(user, token):
             return Response(
                 {"detail": "Invalid or expired token"},
                 status=status.HTTP_400_BAD_REQUEST
