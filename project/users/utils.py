@@ -6,35 +6,40 @@ from django.urls import reverse
 from django.utils.timezone import now
 
 
-def send_verification_email(user, request):
+def send_action_email(
+    *,
+    user,
+    request,
+    path,
+    subject,
+    template,
+    msg,
+):
     token = default_token_generator.make_token(user)
     uid = user.pk
 
-    verify_url = request.build_absolute_uri(
-        reverse("verify-email") + f"?uid={uid}&token={token}"
+    action_url = request.build_absolute_uri(
+        reverse(path) + f"?uid={uid}&token={token}"
     )
 
-    subject = "Подтверждение email"
     from_email = settings.DEFAULT_FROM_EMAIL
     to = [user.email]
 
     context = {
-        "verify_url": verify_url,
+        "action_url": action_url,
         "year": now().year,
+        "msg": msg,
     }
 
     text_content = f"""
-Подтвердите email:
+{subject}
 
-{verify_url}
+{action_url}
 
-Если вы не регистрировались — проигнорируйте письмо.
+{msg}
 """
 
-    html_content = render_to_string(
-        "emails/verify_email.html",
-        context
-    )
+    html_content = render_to_string(template, context)
 
     email = EmailMultiAlternatives(
         subject,
@@ -44,3 +49,4 @@ def send_verification_email(user, request):
     )
     email.attach_alternative(html_content, "text/html")
     email.send()
+
