@@ -13,10 +13,11 @@ class UserManager(BaseUserManager):
         
         email = self.normalize_email(email)
 
+        extra_fields.setdefault("is_active", False)
+        extra_fields.setdefault("is_email_verified", False)
+
         user = self.model(
         email=email,
-        is_active=False,              
-        is_email_verified=False,      
         **extra_fields
         )        
         
@@ -24,13 +25,13 @@ class UserManager(BaseUserManager):
         user.save()
         return user
 
-def create_superuser(self, email, password=None, **extra_fields):
-    extra_fields.setdefault("is_staff", True)
-    extra_fields.setdefault("is_superuser", True)
-    extra_fields.setdefault("is_active", True)
-    extra_fields.setdefault("is_email_verified", True)
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
+        extra_fields.setdefault("is_email_verified", True)
 
-    return self.create_user(email, password, **extra_fields)
+        return self.create_user(email, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
