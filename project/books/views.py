@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
 
 from .models import Book
 from .serializers import (
@@ -12,20 +13,19 @@ from .serializers import (
     UserListSerializer,
 )
 
-
 from accounts.models import User
 
 
 class BooksViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
 
-    # выбираем сериализатор в зависимости от действия
     def get_serializer_class(self):
         if self.action in ['list']:
             return BooksListSerializer
         return BooksDetailSerializer
+
 
 class UsersListAPIView(APIView):
     # authentication_classes = [JWTAuthentication]  
@@ -38,13 +38,3 @@ class UsersListAPIView(APIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK) 
         
-
-class BooksDetailView(APIView):
-    # authentication_classes = [JWTAuthentication]  
-    # permission_classes = [IsAuthenticated]
-
-    def get(self, request, id):
-        book = get_object_or_404(Book, id=id)
-        serializer = BooksDetailSerializer(instance=book)
-        return Response(serializer.data, status=status.HTTP_200_OK) 
-
