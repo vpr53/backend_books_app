@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from accounts.models import User
-from .models import Book
+from .models import Book, UserBook
 
 
 class BooksListSerializer(serializers.ModelSerializer):
@@ -20,4 +20,10 @@ class BooksDetailSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
+        fields = ("__all__")
+
+
+class UserBookListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserBook
         fields = ("__all__")

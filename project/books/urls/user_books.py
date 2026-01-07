@@ -1,13 +1,9 @@
-from django.urls import path
-from ..views import (
-    BooksListAPIView, 
-    UsersListAPIView, 
-    BooksDetailView, 
-)
+from rest_framework.routers import DefaultRouter
+from books.views import UserBookViewSet
 
-urlpatterns = [
-    path("list/", BooksListAPIView.as_view(), name="books-list"),
-    path("detail/<int:id>/", BooksDetailView.as_view(), name="books-detail"), 
-    # path(""),
-    path("list/users/", UsersListAPIView.as_view(), name="users-list"), 
-]
+
+router = DefaultRouter()
+router.register(r'user/books', UserBookViewSet, basename='user-books')
+
+
+urlpatterns = router.urls

@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_spectacular',
+
 
     "rest_framework_simplejwt.token_blacklist",
 
@@ -73,6 +75,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.AllowAny",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 
@@ -144,3 +147,19 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+
+
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Books API",
+    "DESCRIPTION": "Документация API проекта Books",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+
+    # JWT
+    "SECURITY": [
+        {"bearerAuth": []}
+    ],
+    "COMPONENT_SPLIT_REQUEST": True,
+}
