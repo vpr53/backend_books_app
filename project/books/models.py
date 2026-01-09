@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 
 
 class Book(models.Model):
-    google_id = models.CharField("Google ID", max_length=50, unique=True, null=True)
+    google_id = models.CharField("Google ID", max_length=50, unique=True)
     title = models.CharField("Название", max_length=200)
     description = models.TextField("Описание", blank=True)
     publication_year = models.PositiveIntegerField("Год издания", null=True, blank=True)

@@ -4,5 +4,5 @@ from django.urls import path
 
 
 urlpatterns = [
-    path('autocomplete/<str:title>/', BookAutocompleteAPIView.as_view(), name='book_autocomplete'),
+    path('autocomplete/', BookAutocompleteAPIView.as_view(), name='book_autocomplete'),
 ]
