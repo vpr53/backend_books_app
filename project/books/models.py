@@ -15,7 +15,7 @@ class Book(models.Model):
     categories = models.CharField("Жанры", max_length=255, blank=True)
 
     class Meta:
-        verbose_name = "Книга"
+        verbose_name = "книгу"
         verbose_name_plural = "Книги"
 
     def __str__(self):
@@ -75,7 +75,7 @@ class UserBook(models.Model):
     class Meta:
         unique_together = ('user', 'book')
         ordering = ['-created_at']
-        verbose_name = "Книга пользователя"
+        verbose_name = "книгу пользователя"
         verbose_name_plural = "Книги пользователей"
 
     def clean(self):
