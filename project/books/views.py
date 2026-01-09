@@ -83,7 +83,16 @@ class UserBookViewSet(viewsets.ModelViewSet):
     get=extend_schema(
         summary="Autocomplete books from Google Books",
         description="Search books by title via Google Books API and return Google ID, authors, year, etc.",
-        responses=BooksAutocompliteSerializer(many=True)
+        responses=BooksAutocompliteSerializer(many=True),
+        parameters=[
+            OpenApiParameter(
+                name='title',
+                description='Book title to search for',
+                required=True,
+                type=str,
+                location=OpenApiParameter.QUERY
+            )
+        ],
     )
 )
 class BookAutocompleteAPIView(APIView):
