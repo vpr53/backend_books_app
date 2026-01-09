@@ -1,9 +1,8 @@
 from rest_framework.routers import DefaultRouter
-from books.views import UserBookViewSet
+from books.views import book_autocomplete
+from django.urls import path
 
 
-router = DefaultRouter()
-router.register(r'user/books', UserBookViewSet, basename='user-books')
-
-
-urlpatterns = router.urls
+urlpatterns = [
+    path('autocomplete/', book_autocomplete, name='book_autocomplete'),
+]

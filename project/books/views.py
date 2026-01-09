@@ -5,6 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
+from rest_framework.decorators import api_view
+import requests
+
 
 from .models import Book, UserBook
 from .serializers import (
@@ -71,3 +74,46 @@ class UserBookViewSet(viewsets.ModelViewSet):
             return UserBookListSerializer
         return UserBookListSerializer
 
+
+@api_view(['GET'])
+def book_autocomplete(request):
+    query = request.GET.get('title', '')
+    if not query:
+        return Response([])
+
+    url = "https://www.googleapis.com/books/v1/volumes"
+    params = {
+        "q": f"intitle:{query}",
+        "langRestrict": "ru",
+        "maxResults": 15
+    }
+
+    try:
+        r = requests.get(url, params=params)
+        data = r.json()
+        books = []
+
+        for item in data.get("items", []):
+            volume = item.get("volumeInfo", {})
+            
+
+            books.append({
+                "google_id": item.get("id"),
+                "title": volume.get("title"),
+                "authors": ", ".join(volume.get("authors", [])),
+                "publication_year": volume.get("publishedDate", "")[:4],
+                "category": ", ".join(volume.get("categories", [])),
+                "description": volume.get("description", ""),
+                "cover_url": 
+                    volume.get("imageLinks", {}).get("extraLarge") or
+                    volume.get("imageLinks", {}).get("large") or
+                    volume.get("imageLinks", {}).get("medium") or
+                    volume.get("imageLinks", {}).get("small") or
+                    volume.get("imageLinks", {}).get("thumbnail") or
+                    "",
+                "pages_count": volume.get("pageCount"),
+            })
+
+        return Response(books)
+    except Exception:
+        return Response([], status=500)
