@@ -19,6 +19,8 @@ class BooksDetailSerializer(serializers.ModelSerializer):
 
 
 class BooksAutocompliteSerializer(serializers.ModelSerializer):
+    publication_year = serializers.CharField()
+
     class Meta:
         model = Book
         exclude = ['id']
