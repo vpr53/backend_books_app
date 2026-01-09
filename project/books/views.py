@@ -14,11 +14,14 @@ from .serializers import (
     BooksListSerializer,
     BooksDetailSerializer,
     UserListSerializer,
-    UserBookListSerializer
+    UserBookListSerializer,
+    BooksAutocompliteSerializer,
 )
 
 from accounts.models import User
-from drf_spectacular.utils import extend_schema_view, extend_schema
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.plumbing import build_array_type
 
 
 @extend_schema_view(
@@ -75,45 +78,59 @@ class UserBookViewSet(viewsets.ModelViewSet):
         return UserBookListSerializer
 
 
-@api_view(['GET'])
-def book_autocomplete(request):
-    query = request.GET.get('title', '')
-    if not query:
-        return Response([])
 
-    url = "https://www.googleapis.com/books/v1/volumes"
-    params = {
-        "q": f"intitle:{query}",
-        "langRestrict": "ru",
-        "maxResults": 15
-    }
+@extend_schema_view(
+    get=extend_schema(
+        summary="Autocomplete books from Google Books",
+        description="Search books by title via Google Books API and return Google ID, authors, year, etc.",
+        responses=BooksAutocompliteSerializer(many=True)
+    )
+)
+class BookAutocompleteAPIView(APIView):
 
-    try:
-        r = requests.get(url, params=params)
-        data = r.json()
-        books = []
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('title', '').strip()
+        if not query:
+            return Response([])
 
-        for item in data.get("items", []):
-            volume = item.get("volumeInfo", {})
-            
+        url = "https://www.googleapis.com/books/v1/volumes"
+        params = {
+            "q": f"intitle:{query}",
+            "langRestrict": "ru",
+            "maxResults": 15
+        }
 
-            books.append({
-                "google_id": item.get("id"),
-                "title": volume.get("title"),
-                "authors": ", ".join(volume.get("authors", [])),
-                "publication_year": volume.get("publishedDate", "")[:4],
-                "category": ", ".join(volume.get("categories", [])),
-                "description": volume.get("description", ""),
-                "cover_url": 
-                    volume.get("imageLinks", {}).get("extraLarge") or
-                    volume.get("imageLinks", {}).get("large") or
-                    volume.get("imageLinks", {}).get("medium") or
-                    volume.get("imageLinks", {}).get("small") or
-                    volume.get("imageLinks", {}).get("thumbnail") or
-                    "",
-                "pages_count": volume.get("pageCount"),
-            })
+        try:
+            r = requests.get(url, params=params, timeout=5)
+            r.raise_for_status()
+            data = r.json()
 
-        return Response(books)
-    except Exception:
-        return Response([], status=500)
+            books = []
+            for item in data.get("items", []):
+                volume = item.get("volumeInfo", {})
+                image_links = volume.get("imageLinks", {})
+
+                books.append({
+                    "google_id": item.get("id"),
+                    "title": volume.get("title"),
+                    "authors": ", ".join(volume.get("authors", [])),
+                    "publication_year": volume.get("publishedDate", "")[:4],
+                    "category": ", ".join(volume.get("categories", [])),
+                    "description": volume.get("description", ""),
+                    "cover_url": (
+                        image_links.get("extraLarge") or
+                        image_links.get("large") or
+                        image_links.get("medium") or
+                        image_links.get("small") or
+                        image_links.get("thumbnail") or
+                        ""
+                    ),
+                    "pages_count": volume.get("pageCount"),
+                })
+
+            return Response(books)
+
+        except requests.exceptions.RequestException as e:
+            return Response({"error": str(e)}, status=500)
+        except Exception as e:
+            return Response({"error": "Unexpected error", "details": str(e)}, status=500)

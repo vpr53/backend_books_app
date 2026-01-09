@@ -17,6 +17,13 @@ class BooksDetailSerializer(serializers.ModelSerializer):
         fields = ("__all__")
         #exclude = ['google_id', 'pages_count', 'categories']
 
+
+class BooksAutocompliteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        exclude = ['id']
+
+
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
