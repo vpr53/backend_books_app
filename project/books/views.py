@@ -96,7 +96,6 @@ class UserBookViewSet(viewsets.ModelViewSet):
     )
 )
 class BookAutocompleteAPIView(APIView):
-
     def get(self, request, *args, **kwargs):
         query = request.GET.get('title', '').strip()
         if not query:
