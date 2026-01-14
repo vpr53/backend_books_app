@@ -36,3 +36,9 @@ class UserBookListSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserBook
         fields = ("__all__")
+
+
+class UserBookListCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserBook
+        exclude = ['user', 'id']

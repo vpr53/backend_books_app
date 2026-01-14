@@ -16,6 +16,7 @@ from .serializers import (
     UserListSerializer,
     UserBookListSerializer,
     BooksAutocompliteSerializer,
+    UserBookListCreateSerializer,
 )
 
 from accounts.models import User
@@ -40,6 +41,7 @@ class BooksViewSet(viewsets.ModelViewSet):
         if self.action in ['list']:
             return BooksListSerializer
         return BooksDetailSerializer
+    
 
 
 @extend_schema_view(
@@ -68,16 +70,19 @@ class UserViewSet(viewsets.ModelViewSet):
     destroy=extend_schema(summary="Удаление книги пользователя"),
 )
 class UserBookViewSet(viewsets.ModelViewSet):
-    queryset = UserBook.objects.all()
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return UserBook.objects.filter(user=self.request.user) 
+    
     def get_serializer_class(self):
-        if self.action in ['list']:
-            return UserBookListSerializer
+        if self.action in ['create']:
+            return UserBookListCreateSerializer
         return UserBookListSerializer
-
-
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 @extend_schema_view(
     get=extend_schema(
