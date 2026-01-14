@@ -1,4 +1,4 @@
-.PHONY: up runserver migrate makemigrations stop logs shell
+.PHONY: up runserver migrate makemigrations stop logs shell restart
 
 
 up:
@@ -27,3 +27,7 @@ shell:
 
 stop:
 	docker compose down
+
+
+restart:
+	docker compose restart web
