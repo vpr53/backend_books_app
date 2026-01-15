@@ -11,7 +11,7 @@ from books.api import api as books_api
 
 api = NinjaAPI()
 
-api.add_router("/books/", books_api)  
+api.add_router("/books/", books_api, )  
 
 
 urlpatterns = [
