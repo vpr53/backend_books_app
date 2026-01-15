@@ -14,7 +14,6 @@ from .serializers import (
 )
 from .utils import send_action_email
 
-
 class RegisterView(APIView):
     authentication_classes = []
     permission_classes = []
