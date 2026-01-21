@@ -17,8 +17,9 @@ dependencies = [
     "ruff (>=0.14.10,<0.15.0)",
     "drf-spectacular (>=0.29.0,<0.30.0)",
     "requests (>=2.32.5,<3.0.0)",
-    "django-ninja (>=1.5.3,<2.0.0)",
-    "pydantic[email] (>=2.12.5,<3.0.0)"
+    "django-ninja (==1.5.1)",
+    "pydantic[email] (>=2.12.5,<3.0.0)",
+    "django-ninja-jwt (>=5.4.3,<6.0.0)",
 ]
 
 

@@ -5,7 +5,21 @@ from ninja import NinjaAPI
 from books.api import api as books_api
 from accounts.api import api as accounts_api
 
-api = NinjaAPI()
+from ninja_jwt.controller import (     
+    TokenObtainPairController,
+)
+
+from ninja_extra import NinjaExtraAPI, api_controller
+
+@api_controller("/auth/token", tags=["Auth"])
+class CustomJWTController(
+    TokenObtainPairController,
+):
+    pass
+
+api = NinjaExtraAPI()
+api.register_controllers(CustomJWTController)
+
 
 api.add_router("/books/", books_api)
 api.add_router("/auth/", accounts_api)

@@ -122,7 +122,7 @@ def update_user(request, user_id: int, payload: UserSchemaIn):
 
 
 @api.delete("/users/{user_id}/")
-def delete_(request, user_id: int):
+def delete_user(request, user_id: int):
     user = get_object_or_404(User, id=user_id)
     user.delete()
     return 204, None
@@ -154,7 +154,7 @@ def update_user_book(request, user_book_id: int, payload: BookUserSchemaIn):
 
 
 @api.delete("/users/books/{user_book_id}/")
-def delete_(request, user_book_id: int):
+def delete_user_book(request, user_book_id: int):
     user_book = get_object_or_404(UserBook, id=user_book)
     user_book.delete()
     return 204, None

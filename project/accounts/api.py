@@ -2,15 +2,29 @@ from ninja import Router
 from ninja.errors import HttpError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth import authenticate
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 
 from accounts.models import User
-from accounts.schema import RegisterSchema
+from accounts.schema import (
+    RegisterSchema, 
+    LoginSchema
+    )
 from .utils import send_action_email
+from ninja.security import django_auth
 
+from ninja_jwt.tokens import RefreshToken
+from ninja_jwt.schema_control import SchemaControl
+from ninja_jwt.settings import api_settings
+from ninja_extra import api_controller
+from ninja_jwt.controller import TokenObtainPairController
 
 api = Router(tags=["Auth"])
+
+
+
+
 
 
 @api.post("/register/")
@@ -54,3 +68,19 @@ def verify_email(request, uid: str, token: str):
     user.save(update_fields=["is_active"])
 
     return {"detail": "Email successfully verified"}
+
+
+@api.post("/login/")
+def login(request, payload: LoginSchema):
+    user = authenticate(request, username=payload.email, password=payload.password)
+    if not user:
+        raise HttpError(400, "Email or password not valid")
+    
+
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
+
