@@ -9,13 +9,17 @@ from django.utils.encoding import force_str
 from accounts.models import User
 from accounts.schema import (
     RegisterSchema, 
-    LoginSchema
+    LoginSchema,
+    AcsessRefrashSchema,
+    ErrorSchema,
+    SuccessfulSchema,
     )
 from .utils import send_action_email
 from ninja.security import django_auth
 
 from ninja_jwt.tokens import RefreshToken
 from ninja_jwt.schema_control import SchemaControl
+
 from ninja_jwt.settings import api_settings
 from ninja_extra import api_controller
 from ninja_jwt.controller import TokenObtainPairController
@@ -24,14 +28,14 @@ api = Router(tags=["Auth"])
 
 
 
-
-
-
-@api.post("/register/")
+@api.post(
+        "/register/",
+        response={201: SuccessfulSchema, 409: ErrorSchema}
+    )
 def register(request, payload: RegisterSchema):
 
     if User.objects.filter(email=payload.email).exists():
-        raise HttpError(400, "Email already registered")
+        raise HttpError(409, "Email already registered")
 
     user = User.objects.create_user(
         **payload.dict(),
@@ -47,10 +51,18 @@ def register(request, payload: RegisterSchema):
         msg="Если вы не регистрировались — просто проигнорируйте письмо.",
     )
 
-    return {"detail": "Check your email to verify account"}
+    return 201, {"detail": "Check your email to verify account"}
 
 
-@api.get("/verify-email/")
+@api.get(
+    "/verify-email/",
+    response={
+        200: SuccessfulSchema,
+        400: ErrorSchema,
+    },
+    summary="Подтверждение email",
+    description="Проверяет ссылку подтверждения email и активирует пользователя"
+)
 def verify_email(request, uid: str, token: str):
     try:
         user_id = force_str(urlsafe_base64_decode(uid))
@@ -70,7 +82,7 @@ def verify_email(request, uid: str, token: str):
     return {"detail": "Email successfully verified"}
 
 
-@api.post("/login/")
+@api.post("/login/", response={200: AcsessRefrashSchema, 400: ErrorSchema})
 def login(request, payload: LoginSchema):
     user = authenticate(request, username=payload.email, password=payload.password)
     if not user:

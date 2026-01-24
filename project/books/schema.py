@@ -8,6 +8,9 @@ class BookUserSchemaOut(ModelSchema):
     class Meta:
         model = UserBook
         fields = "__all__"
+        
+class ErrorSchema(Schema):
+    detail: str
 
 class BookUserSchemaIn(ModelSchema):
     class Meta:

@@ -7,6 +7,7 @@ from books.schema import (
     BooksAutocompleteShemaOut,
     UserSchemaIn,
     UserSchemaOut,
+    ErrorSchema,
 )
 from ninja.errors import HttpError
 from books.models import Book, UserBook
@@ -16,10 +17,13 @@ from django.shortcuts import get_object_or_404
 import requests
 
 api = Router(tags=["Books"])
+autocomplite_api = Router(tags=["Autocomplite"])
 
 
-@api.post("/books/")
+@api.post("/books/", response={200: BookSchemaIn, 409: ErrorSchema})
 def create_book(request, payload: BookSchemaIn):
+    if Book.objects.filter(google_id=payload.google_id).exists():
+        raise HttpError(409, "Book with this Google ID already exists")
     book = Book.objects.create(**payload.dict())
     return book
 
@@ -49,7 +53,10 @@ def delete_book(request, book_id: int):
     book.delete()
     return 204, None
 
-@api.get("/autocomplete/", response=List[BooksAutocompleteShemaOut])
+@autocomplite_api.get(
+    "/autocomplete/",
+    response=List[BooksAutocompleteShemaOut],
+    )
 def get(request, title: str):
     query = title
 

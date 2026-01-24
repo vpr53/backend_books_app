@@ -24,5 +24,12 @@ class PasswordResetCompleteSchema(Schema):
 
 
 class AcsessRefrashSchema(Schema):
-    acsess: str
-    refrash: str
+    access: str
+    refresh: str
+
+
+class ErrorSchema(Schema):
+    detail: str
+
+class SuccessfulSchema(Schema):
+    detail: str
