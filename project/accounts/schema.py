@@ -33,3 +33,6 @@ class ErrorSchema(Schema):
 
 class SuccessfulSchema(Schema):
     detail: str
+
+class PasswordResetInSchema(Schema):
+    email: str

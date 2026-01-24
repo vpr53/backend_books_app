@@ -13,6 +13,8 @@ from accounts.schema import (
     AcsessRefrashSchema,
     ErrorSchema,
     SuccessfulSchema,
+    PasswordResetInSchema,
+    PasswordResetCompleteSchema,
     )
 from .utils import send_action_email
 from ninja.security import django_auth
@@ -45,7 +47,7 @@ def register(request, payload: RegisterSchema):
     send_action_email(
         user=user,
         request=request,
-        path="/api/v1/auth/verify-email", 
+        path="/api/auth/verify-email", 
         subject="Подтвердите регистрацию",
         template="emails/verify_email.html",
         msg="Если вы не регистрировались — просто проигнорируйте письмо.",
@@ -96,3 +98,60 @@ def login(request, payload: LoginSchema):
         'access': str(refresh.access_token),
     }
 
+
+@api.post("password-reset/", response={200: SuccessfulSchema})
+def password_reset(request, payload: PasswordResetInSchema):
+    user = User.objects.filter(email=payload.email).first()
+
+    if user:
+        send_action_email(
+            user=user,
+            request=request,
+            path="/api/auth/password-reset/confirm",
+            subject="Сброс пароля",
+            template="emails/password_reset.html",
+            msg="Если вы не запрашивали смену пароля — просто проигнорируйте письмо.",
+        )
+    return {"detail": "If account exists, email was sent"}
+
+
+@api.get(
+        "password-reset/confirm/",
+        response={200: SuccessfulSchema, 400: ErrorSchema}
+    )
+def password_reset_confirm(request, uid, token):
+    if not uid or not token:
+        return 400, {"detail": "Invalid link"}
+    user_id = force_str(urlsafe_base64_decode(uid))
+    user = User.objects.filter(pk=user_id).first()
+
+    if not user:
+        return 400, {"detail": "Invalid link"}
+
+    if not default_token_generator.check_token(user, token):
+            return 400, {"detail": "Invalid or expired token"}
+
+    return 200, {"detail": "Token valid"}
+
+
+@api.post(
+        "password-reset/complete/",
+        response={200: SuccessfulSchema, 400: ErrorSchema}
+    )
+def password_reset_complete(request, payload: PasswordResetCompleteSchema):
+        user_id = force_str(urlsafe_base64_decode(payload.uid))
+        user = User.objects.filter(pk=user_id).first()
+
+        if not user:
+            return 400, {"detail": "Invalid link"}
+        
+        if not default_token_generator.check_token(user, payload.token):
+            return 400, {"detail": "Invalid or expired token"},
+
+
+        user.set_password(payload.new_password)
+        user.save()
+
+        return {"detail": "Password successfully updated"}
+
+    
