@@ -37,7 +37,8 @@ class BooksAutocompleteShemaOut(ModelSchema):
 class UserSchemaIn(ModelSchema):
     class Meta:
         model = User
-        exclude = ['id']
+        exclude = ["id", "groups", "user_permissions"]
+
 
 class UserSchemaOut(ModelSchema):
     class Meta:
