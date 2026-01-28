@@ -27,7 +27,8 @@ INSTALLED_APPS = [
     'ninja_extra',
 
     'accounts',
-    'books', 
+    'books',
+    'comments',
 
     'django.contrib.admin',
     'django.contrib.auth',

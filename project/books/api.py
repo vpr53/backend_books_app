@@ -20,6 +20,38 @@ api = Router(tags=["Books"])
 autocomplite_api = Router(tags=["Autocomplite"])
 
 
+@api.post("/users/books/")
+def create_user_book(request, payload: BookUserSchemaIn):
+    user_book = UserBook.objects.create(**payload.dict())
+    return user_book
+
+@api.get("/users/books/", response=List[BookUserSchemaOut])
+def list_users_book(request):
+    qs = UserBook.objects.all()
+    return qs
+
+@api.get("/users/books/{user_book_id}/", response=BookUserSchemaOut)
+def get_user_book(request, user_book_id:int):
+    qs = get_object_or_404(UserBook, id=user_book_id)
+    return qs
+
+
+@api.put("/users/books/{user_book_id}/")
+def update_user_book(request, user_book_id: int, payload: BookUserSchemaIn):
+    user_book = get_object_or_404(UserBook, id=user_book_id)
+    for attr, value in payload.dict().items():
+        setattr(user_book, attr, value)
+    user_book.save()
+    return user_book
+
+
+@api.delete("/users/books/{user_book_id}/")
+def delete_user_book(request, user_book_id: int):
+    user_book = get_object_or_404(UserBook, id=user_book)
+    user_book.delete()
+    return 200, {"detail": "The post was successfully deleted"}
+
+
 @api.post("/books/", response={200: BookSchemaIn, 409: ErrorSchema})
 def create_book(request, payload: BookSchemaIn):
     if Book.objects.filter(google_id=payload.google_id).exists():
@@ -38,7 +70,7 @@ def get_book(request, book_id:int):
     return qs
 
 
-@api.put("/books/{book_id}/")
+@api.put("/books/{book_id}/", response=BookSchemaOut)
 def update_book(request, book_id: int, payload: BookSchemaIn):
     book = get_object_or_404(Book, id=book_id)
     for attr, value in payload.dict().items():
@@ -51,7 +83,7 @@ def update_book(request, book_id: int, payload: BookSchemaIn):
 def delete_book(request, book_id: int):
     book = get_object_or_404(Book, id=book_id)
     book.delete()
-    return 204, None
+    return 200, {"detail": "The book was successfully deleted"}
 
 @autocomplite_api.get(
     "/autocomplete/",
@@ -103,7 +135,7 @@ def get(request, title: str):
         return {"error": "Unexpected error", "details": str(e)}
     
 
-@api.post("/users/")
+@api.post("/users/", response=UserSchemaOut)
 def create_user(request, payload: UserSchemaIn):
     user = User.objects.create(**payload.dict())
     return user
@@ -113,13 +145,13 @@ def list_users(request):
     qs = User.objects.all()
     return qs
 
-@api.get("/users/{user_id}/", response=BookSchemaOut)
+@api.get("/users/{user_id}/", response=UserSchemaOut)
 def get_user(request, user_id:int):
     qs = get_object_or_404(User, id=user_id)
     return qs
 
 
-@api.put("/users/{user_id}/")
+@api.put("/users/{user_id}/", response=UserSchemaOut)
 def update_user(request, user_id: int, payload: UserSchemaIn):
     user = get_object_or_404(User, id=user_id)
     for attr, value in payload.dict().items():
@@ -132,36 +164,6 @@ def update_user(request, user_id: int, payload: UserSchemaIn):
 def delete_user(request, user_id: int):
     user = get_object_or_404(User, id=user_id)
     user.delete()
-    return 204, None
+    return 200, {"detail": "The user was successfully deleted"}
 
 
-@api.post("/users/books/")
-def create_user_book(request, payload: BookUserSchemaIn):
-    user_book = UserBook.objects.create(**payload.dict())
-    return user_book
-
-@api.get("/users/books/", response=List[BookUserSchemaOut])
-def list_users_book(request):
-    qs = UserBook.objects.all()
-    return qs
-
-@api.get("/users/books/{user_book_id}/", response=BookUserSchemaOut)
-def get_user_book(request, user_book_id:int):
-    qs = get_object_or_404(UserBook, id=user_book_id)
-    return qs
-
-
-@api.put("/users/books/{user_book_id}/")
-def update_user_book(request, user_book_id: int, payload: BookUserSchemaIn):
-    user_book = get_object_or_404(UserBook, id=user_book_id)
-    for attr, value in payload.dict().items():
-        setattr(user_book, attr, value)
-    user_book.save()
-    return user_book
-
-
-@api.delete("/users/books/{user_book_id}/")
-def delete_user_book(request, user_book_id: int):
-    user_book = get_object_or_404(UserBook, id=user_book)
-    user_book.delete()
-    return 204, None

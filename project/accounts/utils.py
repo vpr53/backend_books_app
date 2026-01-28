@@ -26,7 +26,6 @@ def send_action_email(
 
     query = urlencode({**params, "uid": uid, "token": token})
 
-    # исправлено: ? вместо &
     action_url = f"{request.build_absolute_uri(path)}?{query}"
 
     context = {
