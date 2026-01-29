@@ -14,6 +14,9 @@ class CommentSchemaIn(Schema):
     text: str
     
 
+class CommentUpdateSchemaIn(Schema):
+    text: str 
+
 class ErrorSchema(Schema):
     detail: str
 

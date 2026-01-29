@@ -7,6 +7,7 @@ from comments.schema import (
     CommentSchemaOut,
     ErrorSchema,
     UserSchema,
+    CommentUpdateSchemaIn,
     )
 from comments.models import Comment
 from books.models import UserBook
@@ -56,17 +57,30 @@ def get_comment(request, comment_id: int):
     comment = get_object_or_404(Comment, pk=comment_id)
     return comment
 
-# @api.put("/books/{book_id}/")
-# def update_book(request, book_id: int, payload: BookSchemaIn):
-#     book = get_object_or_404(Book, id=book_id)
-#     for attr, value in payload.dict().items():
-#         setattr(book, attr, value)
-#     book.save()
-#     return book
+@api.put(
+        "/comments/{comment_id}/",
+        auth=JWTAuth(),
+        response={200: CommentSchemaOut, 403: ErrorSchema},
+    )
+def update_comment(
+        request,
+        comment_id: int,
+        payload: CommentUpdateSchemaIn
+    ):
+    user = request.auth
+    comment = get_object_or_404(Comment, id=comment_id)
 
+    if comment.user == user or user.is_staff():
+        comment.text = payload.text
+        comment.save()
+        return comment
+    return 403, {"detail": "Forbidden"}
 
-# @api.delete("/books/{book_id}/")
-# def delete_book(request, book_id: int):
-#     book = get_object_or_404(Book, id=book_id)
-#     book.delete()
-#     return 204, None
+                    
+@api.delete("/comments/{comment_id}/", auth=JWTAuth(),)
+def delete_book(request, comment_id: int):
+    
+    comment = get_object_or_404(Comment, id=comment_id)
+    comment.delete()
+
+    return 200, {"detail": "The user was successfully deleted"}
