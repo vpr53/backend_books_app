@@ -52,7 +52,7 @@ def delete_user_book(request, user_book_id: int):
     return 200, {"detail": "The post was successfully deleted"}
 
 
-@api.post("/books/", response={200: BookSchemaIn, 409: ErrorSchema})
+@api.post("/books/", response={200: BookSchemaOut, 409: ErrorSchema})
 def create_book(request, payload: BookSchemaIn):
     if Book.objects.filter(google_id=payload.google_id).exists():
         raise HttpError(409, "Book with this Google ID already exists")
@@ -70,9 +70,16 @@ def get_book(request, book_id:int):
     return qs
 
 
-@api.put("/books/{book_id}/", response=BookSchemaOut)
+@api.put("/books/{book_id}/", response={200: BookSchemaOut, 409: ErrorSchema})
 def update_book(request, book_id: int, payload: BookSchemaIn):
     book = get_object_or_404(Book, id=book_id)
+
+    if (
+        payload.google_id != book.google_id
+        and Book.objects.filter(google_id=payload.google_id).exclude(id=book_id).exists()
+    ):
+        return 409, {"detail": "google_id already exists"}
+    
     for attr, value in payload.dict().items():
         setattr(book, attr, value)
     book.save()
