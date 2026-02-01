@@ -15,6 +15,8 @@ from accounts.models import User
 from typing import List
 from django.shortcuts import get_object_or_404
 import requests
+from ninja_jwt.authentication import JWTAuth
+
 
 api = Router(tags=["Books"])
 autocomplite_api = Router(tags=["Autocomplite"])
@@ -25,7 +27,11 @@ def create_user_book(request, payload: BookUserSchemaIn):
     user_book = UserBook.objects.create(**payload.dict())
     return user_book
 
-@api.get("/users/books/", response=List[BookUserSchemaOut])
+@api.get(
+        "/users/books/",
+        auth=JWTAuth(),
+        response=List[BookUserSchemaOut]
+    )
 def list_users_book(request):
     qs = UserBook.objects.all()
     return qs
@@ -52,25 +58,43 @@ def delete_user_book(request, user_book_id: int):
     return 200, {"detail": "The post was successfully deleted"}
 
 
-@api.post("/books/", response={200: BookSchemaOut, 409: ErrorSchema})
+@api.post(
+        "/books/",
+        auth=JWTAuth(),
+        response={200: BookSchemaOut, 409: ErrorSchema}
+    )
 def create_book(request, payload: BookSchemaIn):
     if Book.objects.filter(google_id=payload.google_id).exists():
         raise HttpError(409, "Book with this Google ID already exists")
+    
     book = Book.objects.create(**payload.dict())
     return book
 
-@api.get("/books/", response=List[BookSchemaOut])
+
+@api.get(
+        "/books/",
+        auth=JWTAuth(),
+        response=List[BookSchemaOut]
+    )
 def list_books(request):
     qs = Book.objects.all()
     return qs
 
-@api.get("/books/{book_id}/", response=BookSchemaOut)
+@api.get(
+        "/books/{book_id}/",
+        auth=JWTAuth(),
+        response=BookSchemaOut
+    )
 def get_book(request, book_id:int):
     qs = get_object_or_404(Book, id=book_id)
     return qs
 
 
-@api.put("/books/{book_id}/", response={200: BookSchemaOut, 409: ErrorSchema})
+@api.put(
+        "/books/{book_id}/",
+        auth=JWTAuth(),
+        response={200: BookSchemaOut, 409: ErrorSchema}
+    )
 def update_book(request, book_id: int, payload: BookSchemaIn):
     book = get_object_or_404(Book, id=book_id)
 
@@ -86,7 +110,10 @@ def update_book(request, book_id: int, payload: BookSchemaIn):
     return book
 
 
-@api.delete("/books/{book_id}/")
+@api.delete(
+        "/books/{book_id}/",
+        auth=JWTAuth(),
+    )
 def delete_book(request, book_id: int):
     book = get_object_or_404(Book, id=book_id)
     book.delete()
