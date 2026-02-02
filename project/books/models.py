@@ -78,10 +78,6 @@ class UserBook(models.Model):
         verbose_name = "книгу пользователя"
         verbose_name_plural = "Книги пользователей"
 
-    def clean(self):
-        if self.current_page and self.book.pages_count and self.current_page > self.book.pages_count:
-            raise ValidationError("Текущая страница не может быть больше количества страниц книги.")
-
 
 '''
     def __str__(self):
