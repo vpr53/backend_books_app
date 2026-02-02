@@ -1,40 +1,10 @@
-from django.test import TestCase
 from books.models import Book
-from accounts.models import User
-from django.test import Client
 from utils.decorators import authorized
 import json
+from .base import BaseBookTestCase
 
 
-
-def book_payload(**kwargs):
-    return {
-        "google_id": "test",
-        "title": "title",
-        "description": "desc",
-        "authors": "authors",
-        "categories": "1",
-        **kwargs,
-    }
-
-
-class SimpleTest(TestCase):
-    def setUp(self):
-        self.book1 = Book.objects.create(google_id="674291498137", title="Погода ТОП")
-        self.book2 = Book.objects.create(google_id="674293123123", title="Погода Плохая")
-        self.user1 = User.objects.create_user(
-            email="user@mail.ru",
-            password="12345",
-            is_active = True,
-        )
-        self.user2 = User.objects.create_user(
-            email="use2r@mail.ru",
-            password="122345",
-            is_active = True,
-        )
-        self.client = Client()
-
-
+class BookTest(BaseBookTestCase):
     @authorized(user_attr="user1")
     def test_list_books_to_200(self):
 
@@ -58,7 +28,7 @@ class SimpleTest(TestCase):
     def test_create_book_to_200(self):
         response = self.client.post(
             "/api/books/books/",
-            data=book_payload(google_id="qfqiAAAAQBAK", title="Мастер и Маргарита")
+            data=self.book_payload(google_id="qfqiAAAAQBAK", title="Мастер и Маргарита")
         )
 
         data = response.json()
@@ -70,7 +40,7 @@ class SimpleTest(TestCase):
     def test_create_book_to_401(self):
         response = self.client.post(
             "/api/books/books/",
-            data=json.dumps(book_payload(google_id="674291498137", title="Мастер и Маргарита1")),
+            data=json.dumps(self.book_payload(google_id="674291498137", title="Мастер и Маргарита1")),
             content_type="application/json",
         )
         self.assertEqual(response.json()["detail"], 'Unauthorized')
@@ -81,7 +51,7 @@ class SimpleTest(TestCase):
     def test_create_book_to_409(self):
         response = self.client.post(
             "/api/books/books/",
-            data=book_payload(google_id=f"{self.book1.google_id}", title="Мастер и Маргарита1")
+            data=self.book_payload(google_id=f"{self.book1.google_id}", title="Мастер и Маргарита1")
             )
         self.assertEqual(response.json()["detail"], 'Book with this Google ID already exists')
         self.assertEqual(response.status_code, 409)
@@ -113,7 +83,7 @@ class SimpleTest(TestCase):
 
         response = self.client.put(
             f"/api/books/books/{book.id}/",
-            data=book_payload(google_id=f"{self.book1.google_id}", title="Мастер и Маргарита2")
+            data=self.book_payload(google_id=f"{self.book1.google_id}", title="Мастер и Маргарита2")
         )
 
         book = Book.objects.get(google_id=f"{self.book1.google_id}")
@@ -126,7 +96,7 @@ class SimpleTest(TestCase):
 
         response = self.client.put(
             f"/api/books/books/1000/",
-            data=book_payload(google_id=f"{self.book1.google_id}", title="948u2348")
+            data=self.book_payload(google_id=f"{self.book1.google_id}", title="948u2348")
         )
 
         self.assertEqual(response.status_code, 404)
@@ -138,7 +108,7 @@ class SimpleTest(TestCase):
 
         response = self.client.put(
             f"/api/books/books/{self.book1.id}/",
-            data=book_payload(google_id=f"{self.book2.google_id}", title="948u2348")
+            data=self.book_payload(google_id=f"{self.book2.google_id}", title="948u2348")
         )
 
         self.assertEqual(response.status_code, 409)
@@ -148,7 +118,7 @@ class SimpleTest(TestCase):
     def test_update_book_to_401(self):
         response = self.client.put(
             f"/api/books/books/{self.book1.id}/",
-            data=json.dumps(book_payload(google_id=f"{self.book1.google_id}", title="948u2348")),
+            data=json.dumps(self.book_payload(google_id=f"{self.book1.google_id}", title="948u2348")),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 401)

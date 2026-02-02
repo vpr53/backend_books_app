@@ -2,6 +2,7 @@ from ninja import Router
 from books.schema import (
     BookUserSchemaIn,
     BookUserSchemaOut,
+    BookUserTestSchemaIn,
 )
 from books.models import UserBook
 from typing import List
@@ -11,10 +12,18 @@ from ninja_jwt.authentication import JWTAuth
 
 api = Router(tags=["User_Books"])
 
-@api.post("/users/books/")
-def create_user_book(request, payload: BookUserSchemaIn):
-    user_book = UserBook.objects.create(**payload.dict())
+@api.post(
+        "/users/books/",
+        auth=JWTAuth(),
+        response=BookUserSchemaOut,
+    )
+def create_user_book(request, payload: BookUserTestSchemaIn):
+    user_book = UserBook.objects.create(
+        user=request.user,
+        **payload.dict()
+    )
     return user_book
+
 
 @api.get(
         "/users/books/",
