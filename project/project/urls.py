@@ -1,9 +1,11 @@
 from django.contrib import admin
 from django.urls import path
-from ninja import NinjaAPI
 
-from books.api import api as books_api
-from books.api import autocomplite_api
+from books.handlers.api_user import api as users_api
+from books.handlers.api_user_book import api as user_books_api
+from books.handlers.api_book import api as books_api
+from books.handlers.api_book import autocomplite_api
+
 from comments.api import api as comments_api
 from accounts.api import api as accounts_api
 
@@ -12,13 +14,8 @@ from ninja_jwt.controller import (
     NinjaJWTDefaultController,
 )
 
-from ninja_extra import NinjaExtraAPI, api_controller
+from ninja_extra import NinjaExtraAPI
 
-# @api_controller("/auth/token", tags=["Auth"])
-# class CustomJWTController(
-#     TokenObtainPairController,
-# ):
-#     pass
 
 api = NinjaExtraAPI()
 api.register_controllers(NinjaJWTDefaultController)
@@ -28,6 +25,8 @@ api.add_router("/books/", books_api)
 api.add_router("/books/", autocomplite_api)
 api.add_router("/auth/", accounts_api)
 api.add_router("/comments/", comments_api)
+api.add_router("/users/", users_api)
+api.add_router("/books/", user_books_api)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
