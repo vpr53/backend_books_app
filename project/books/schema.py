@@ -15,7 +15,21 @@ class ErrorSchema(Schema):
 class BookUserSchemaIn(ModelSchema):
     class Meta:
         model = UserBook
-        exclude = ["user", "id"]
+        exclude = ["user", "id", "created_at"]
+
+# class BookUserTestSchemaIn(ModelSchema):
+#     class Meta:
+#         model = UserBook
+#         model_fields = ['book_id', 'reading_status', 'current_page', rating] # !!!
+
+
+class BookUserTestSchemaIn(Schema):
+    book_id: int
+    reading_status: str
+    current_page: int
+    rating: int
+    review: str
+    is_public: bool
 
 class BookSchemaIn(ModelSchema):
     class Meta:
