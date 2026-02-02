@@ -3,6 +3,7 @@ from books.schema import (
     BookUserSchemaIn,
     BookUserSchemaOut,
     BookUserTestSchemaIn,
+    ErrorSchema
 )
 from books.models import UserBook
 from typing import List
@@ -15,13 +16,20 @@ api = Router(tags=["User_Books"])
 @api.post(
         "/users/books/",
         auth=JWTAuth(),
-        response=BookUserSchemaOut,
+        response={200: BookUserSchemaOut, 409: ErrorSchema},
     )
 def create_user_book(request, payload: BookUserTestSchemaIn):
+    if UserBook.objects.filter(
+        book_id=payload.book_id,
+        user=request.user
+    ).exists():
+        return 409, {"detail": "Book with this ID already exists"}
     user_book = UserBook.objects.create(
         user=request.user,
         **payload.dict()
-    )
+    )   
+
+
     return user_book
 
 
@@ -34,7 +42,10 @@ def list_users_book(request):
     qs = UserBook.objects.all()
     return qs
 
-@api.get("/users/books/{user_book_id}/", response=BookUserSchemaOut)
+@api.get(
+        "/users/books/{user_book_id}/",
+        response={200: BookUserSchemaOut, 404: ErrorSchema},
+    )
 def get_user_book(request, user_book_id:int):
     qs = get_object_or_404(UserBook, id=user_book_id)
     return qs
