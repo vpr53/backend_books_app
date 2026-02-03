@@ -3,7 +3,8 @@ from books.schema import (
     BookUserSchemaIn,
     BookUserSchemaOut,
     BookUserTestSchemaIn,
-    ErrorSchema
+    ErrorSchema,
+    SuccessfulSchema,
 )
 from books.models import UserBook
 from typing import List
@@ -44,6 +45,7 @@ def list_users_book(request):
 
 @api.get(
         "/users/books/{user_book_id}/",
+        auth=JWTAuth(),
         response={200: BookUserSchemaOut, 404: ErrorSchema},
     )
 def get_user_book(request, user_book_id:int):
@@ -51,17 +53,43 @@ def get_user_book(request, user_book_id:int):
     return qs
 
 
-@api.put("/users/books/{user_book_id}/")
-def update_user_book(request, user_book_id: int, payload: BookUserSchemaIn):
-    user_book = get_object_or_404(UserBook, id=user_book_id)
+@api.put(
+        "/users/books/{user_book_id}/",
+        auth=JWTAuth(),
+        response={
+            200: BookUserSchemaOut,
+            404: ErrorSchema,
+            403: ErrorSchema,
+        }
+    )
+def update_user_book(request, user_book_id: int, payload: BookUserTestSchemaIn):
+    user_book = UserBook.objects.filter(id=user_book_id).first()
+    if not user_book:
+        return 404, {"detail": "Not Found"}
+
+    if user_book.user != request.user and not request.user.is_superuser:
+        return 403, {"detail": "Forbidden"}
+
     for attr, value in payload.dict().items():
         setattr(user_book, attr, value)
     user_book.save()
     return user_book
 
 
-@api.delete("/users/books/{user_book_id}/")
+@api.delete(
+        "/users/books/{user_book_id}/",
+        auth=JWTAuth(),
+        response={
+            200: SuccessfulSchema,
+            404: ErrorSchema,
+            403: ErrorSchema,
+        }
+    )
 def delete_user_book(request, user_book_id: int):
-    user_book = get_object_or_404(UserBook, id=user_book)
+    user_book = get_object_or_404(UserBook, id=user_book_id)
+
+    if user_book.user != request.user and not request.user.is_superuser:
+        return 403, {"detail": "Forbidden"}
+    
     user_book.delete()
     return 200, {"detail": "The post was successfully deleted"}

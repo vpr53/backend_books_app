@@ -59,3 +59,6 @@ class UserSchemaOut(ModelSchema):
         model = User
         fields = ("__all__")
 
+
+class SuccessfulSchema(Schema):
+    detail: str
