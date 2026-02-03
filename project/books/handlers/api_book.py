@@ -107,7 +107,7 @@ def get(request, title: str):
                 "title": volume.get("title"),
                 "authors": ", ".join(volume.get("authors", [])),
                 "publication_year": volume.get("publishedDate", "")[:4],
-                "category": ", ".join(volume.get("categories", [])),
+                "categories": ", ".join(volume.get("categories", [])),
                 "description": volume.get("description", ""),
                 "cover_url": (
                     image_links.get("extraLarge") or
