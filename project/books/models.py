@@ -12,7 +12,7 @@ class Book(models.Model):
     pages_count = models.PositiveIntegerField("Количество страниц", null=True, blank=True)
     cover_url = models.URLField("Обложка", null=True, blank=True)
     authors = models.CharField("Авторы", max_length=255, blank=True)
-    categories = models.CharField("Жанры", max_length=255, blank=True)
+    categories = models.CharField("Жанры", max_length=255, blank=True, null=True)
 
     class Meta:
         verbose_name = "книгу"
