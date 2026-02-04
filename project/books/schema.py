@@ -19,7 +19,7 @@ class BookUserAndBooksSchemaOut(Schema):
     pages_count: int
     cover_url: Optional[str] = None
     authors: str
-    categories: str
+    categories: Optional[str] = None
     book_id: int
     user: int 
     reading_status: str
