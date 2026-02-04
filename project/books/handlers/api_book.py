@@ -4,6 +4,7 @@ from books.schema import (
     BookSchemaOut,
     BooksAutocompleteShemaOut,
     ErrorSchema,
+    ErrorDetailSchema,
 )
 from ninja.errors import HttpError
 from books.models import Book
@@ -11,6 +12,8 @@ from typing import List
 from django.shortcuts import get_object_or_404
 import requests
 from ninja_jwt.authentication import JWTAuth
+from project.settings import GOOGLE_BOOKS_API_KEY
+from django.conf import settings
 
 
 api = Router(tags=["Books"])
@@ -24,7 +27,7 @@ autocomplite_api = Router(tags=["Autocomplite"])
     )
 def create_book(request, payload: BookSchemaIn):
     if Book.objects.filter(google_id=payload.google_id).exists():
-        raise HttpError(409, "Book with this Google ID already exists")
+        return 409, {"detail":"Book with this Google ID already exists"}
     
     book = Book.objects.create(**payload.dict())
     return book
@@ -78,18 +81,34 @@ def delete_book(request, book_id: int):
     book.delete()
     return 200, {"detail": "The book was successfully deleted"}
 
+
+
 @autocomplite_api.get(
     "/autocomplete/",
-    response=List[BooksAutocompleteShemaOut],
+    response={
+        200: List[BooksAutocompleteShemaOut],
+        502: ErrorDetailSchema,
+        400: ErrorDetailSchema,
+        500: ErrorDetailSchema,
+        },
+    auth=JWTAuth(),
     )
 def get(request, title: str):
     query = title
+
+    key = getattr(settings, "GOOGLE_BOOKS_API_KEY", None)
+    if not key:
+        return 400, {
+            "error": "Configuration error",
+            "details": "Google Books API key is missing"
+        }
 
     url = "https://www.googleapis.com/books/v1/volumes"
     params = {
         "q": f"intitle:{query}",
         "langRestrict": "ru",
-        "maxResults": 15
+        "maxResults": 15,
+        "key": GOOGLE_BOOKS_API_KEY
     }
 
     try:
@@ -99,15 +118,15 @@ def get(request, title: str):
 
         books = []
         for item in data.get("items", []):
-            volume = item.get("volumeInfo", {})
-            image_links = volume.get("imageLinks", {})
+            volume = item.get("volumeInfo", {}) or {}
+            image_links = volume.get("imageLinks", {}) or {}
 
             books.append({
                 "google_id": item.get("id"),
-                "title": volume.get("title"),
-                "authors": ", ".join(volume.get("authors", [])),
-                "publication_year": volume.get("publishedDate", "")[:4],
-                "categories": ", ".join(volume.get("categories", [])),
+                "title": volume.get("title", ""),
+                "authors": ", ".join(volume.get("authors") or []),
+                "publication_year": str(volume.get("publishedDate", ""))[:4],
+                "category": ", ".join(volume.get("categories") or []),
                 "description": volume.get("description", ""),
                 "cover_url": (
                     image_links.get("extraLarge") or
@@ -120,11 +139,16 @@ def get(request, title: str):
                 "pages_count": volume.get("pageCount"),
             })
 
-        return books
+        return 200, books
 
     except requests.exceptions.RequestException as e:
-        raise HttpError(502, str(e))
-    except Exception as e:
-        return {"error": "Unexpected error", "details": str(e)}
+        return 502, {
+            "error": "External API error",
+            "details": str(e)
+        }
     
-
+    except Exception as e:
+        return 500, {
+            "error": "Unexpected error",
+            "details": str(e)
+        }

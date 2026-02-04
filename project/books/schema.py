@@ -12,6 +12,11 @@ class BookUserSchemaOut(ModelSchema):
 class ErrorSchema(Schema):
     detail: str
 
+class ErrorDetailSchema(Schema):
+    detail: str
+    error: str
+
+
 class BookUserSchemaIn(ModelSchema):
     class Meta:
         model = UserBook

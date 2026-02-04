@@ -144,17 +144,5 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 
+GOOGLE_BOOKS_API_KEY = config('GOOGLE_BOOKS_API_KEY')
 
-
-SPECTACULAR_SETTINGS = {
-    "TITLE": "Books API",
-    "DESCRIPTION": "Документация API проекта Books",
-    "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": False,
-
-    # JWT
-    "SECURITY": [
-        {"bearerAuth": []}
-    ],
-    "COMPONENT_SPLIT_REQUEST": True,
-}
