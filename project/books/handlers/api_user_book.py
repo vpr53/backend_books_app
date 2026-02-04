@@ -96,9 +96,9 @@ def delete_user_book(request, user_book_id: int):
 
 
 @api.get(
-        "/users/books/user-books/",
+        "/users/user-books/",
         auth=JWTAuth(),
-        response={200: BookUserSchemaOut, 401: ErrorSchema},
+        response={200: List[BookUserSchemaOut], 401: ErrorSchema},
     )
 def get_user_user_book(request):
 
