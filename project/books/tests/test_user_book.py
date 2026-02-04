@@ -186,3 +186,8 @@ class UserBookTest(BaseBookTestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.json()["detail"], 'Forbidden')
+
+    
+    # @authorized(user_attr="user1")
+    # def test_get_user_user_book(user_attr="user1"):
+        

@@ -2,12 +2,32 @@ from ninja import Schema
 from ninja.orm import ModelSchema
 from books.models import Book, UserBook
 from accounts.models import User
-
+from datetime import datetime, date
+from typing import Optional
 
 class BookUserSchemaOut(ModelSchema):
     class Meta:
         model = UserBook
         fields = "__all__"
+
+
+class BookUserAndBooksSchemaOut(Schema):
+    user_book: int 
+    title: str
+    description: str
+    publication_year: int
+    pages_count: int
+    cover_url: Optional[str] = None
+    authors: str
+    categories: str
+    book_id: int
+    user: int 
+    reading_status: str
+    current_page: int
+    rating: int
+    review: str
+    is_public: bool
+    created_at: datetime
         
 class ErrorSchema(Schema):
     detail: str
