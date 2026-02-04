@@ -93,3 +93,13 @@ def delete_user_book(request, user_book_id: int):
     
     user_book.delete()
     return 200, {"detail": "The post was successfully deleted"}
+
+
+@api.get(
+        "/users/books/user-books/",
+        auth=JWTAuth(),
+        response={200: BookUserSchemaOut, 401: ErrorSchema},
+    )
+def get_user_user_book(request):
+
+    return request.user.user_books.all()
