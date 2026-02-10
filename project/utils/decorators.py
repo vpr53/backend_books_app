@@ -26,3 +26,27 @@ def authorized(user_attr="user1"):
 
         return wrapper
     return decorator
+
+
+
+
+# def authorized(user_attr="user1"):
+#     def decorator(test_func):
+#         @wraps(test_func)
+#         def wrapper(self, *args, **kwargs):
+#             user = getattr(self, user_attr)
+#             token = AccessToken.for_user(user)
+
+#             def auth(**extra):
+#                 return {
+#                     "headers": {
+#                         "Authorization": f"Bearer {token}",
+#                         **extra.get("headers", {}),
+#                     }
+#                 }
+
+#             self.auth = auth
+#             return test_func(self, *args, **kwargs)
+
+#         return wrapper
+#     return decorator

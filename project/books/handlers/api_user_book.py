@@ -16,7 +16,7 @@ from ninja_jwt.authentication import JWTAuth
 api = Router(tags=["User_Books"])
 
 @api.post(
-        "/users/books/",
+        "/",
         auth=JWTAuth(),
         response={200: BookUserSchemaOut, 409: ErrorSchema},
     )
@@ -36,7 +36,7 @@ def create_user_book(request, payload: BookUserTestSchemaIn):
 
 
 @api.get(
-        "/users/books/",
+        "/",
         auth=JWTAuth(),
         response=List[BookUserSchemaOut]
     )
@@ -45,7 +45,7 @@ def list_users_book(request):
     return qs
 
 @api.get(
-        "/users/books/{user_book_id}/",
+        "/{user_book_id}/",
         auth=JWTAuth(),
         response={200: BookUserSchemaOut, 404: ErrorSchema},
     )
@@ -55,7 +55,7 @@ def get_user_book(request, user_book_id:int):
 
 
 @api.put(
-        "/users/books/{user_book_id}/",
+        "/{user_book_id}/",
         auth=JWTAuth(),
         response={
             200: BookUserSchemaOut,
@@ -78,7 +78,7 @@ def update_user_book(request, user_book_id: int, payload: BookUserTestSchemaIn):
 
 
 @api.delete(
-        "/users/books/{user_book_id}/",
+        "/{user_book_id}/",
         auth=JWTAuth(),
         response={
             200: SuccessfulSchema,
@@ -130,7 +130,7 @@ def delete_user_book(request, user_book_id: int):
 
 
 @api.get(
-    "/users/user-books/",
+    "/me/",
     auth=JWTAuth(),
     response={200: List[BookUserAndBooksSchemaOut], 401: ErrorSchema},
 )

@@ -21,7 +21,7 @@ autocomplite_api = Router(tags=["Autocomplite"])
 
 
 @api.post(
-        "/books/",
+        "/",
         auth=JWTAuth(),
         response={200: BookSchemaOut, 409: ErrorSchema}
     )
@@ -34,7 +34,7 @@ def create_book(request, payload: BookSchemaIn):
 
 
 @api.get(
-        "/books/",
+        "/",
         auth=JWTAuth(),
         response=List[BookSchemaOut]
     )
@@ -43,7 +43,7 @@ def list_books(request):
     return qs
 
 @api.get(
-        "/books/{book_id}/",
+        "/{book_id}/",
         auth=JWTAuth(),
         response=BookSchemaOut
     )
@@ -53,7 +53,7 @@ def get_book(request, book_id:int):
 
 
 @api.put(
-        "/books/{book_id}/",
+        "/{book_id}/",
         auth=JWTAuth(),
         response={200: BookSchemaOut, 409: ErrorSchema}
     )
@@ -73,7 +73,7 @@ def update_book(request, book_id: int, payload: BookSchemaIn):
 
 
 @api.delete(
-        "/books/{book_id}/",
+        "/{book_id}/",
         auth=JWTAuth(),
     )
 def delete_book(request, book_id: int):

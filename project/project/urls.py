@@ -27,7 +27,7 @@ api.add_router("/books/", autocomplite_api)
 api.add_router("/auth/", accounts_api)
 api.add_router("/comments/", comments_api)
 api.add_router("/users/", users_api)
-api.add_router("/books/", user_books_api)
+api.add_router("/user-books/", user_books_api)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
