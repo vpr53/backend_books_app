@@ -9,7 +9,7 @@ def authorized(user_attr="user1"):
         def wrapper(self, *args, **kwargs):
             user = getattr(self, user_attr)
             token = AccessToken.for_user(user)
-            self.client.defaults["HTTP_AUTHORIZATION"] = f"Bearer {token}"
+            self.client.defaults["HTTP_AUTHORIZATION"]= f"Bearer {token}"
 
             original_post = self.client.post
             original_put = self.client.put

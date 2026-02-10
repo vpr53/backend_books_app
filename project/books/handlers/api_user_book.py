@@ -96,34 +96,47 @@ def delete_user_book(request, user_book_id: int):
     return 200, {"detail": "The post was successfully deleted"}
 
 
+# @api.get(
+#     "/users/user-books/",
+#     auth=JWTAuth(),
+#     response={200: List[BookUserAndBooksSchemaOut], 401: ErrorSchema},
+# )
+# def get_user_user_book(request):
+#     user_books = request.user.user_books.all()
+#     result = []
+
+#     for item in user_books:
+#         book = item.book  
+#         result.append(BookUserAndBooksSchemaOut(
+#             user_book=item.id,
+#             book_id=book.id,
+#             user=item.user.id,
+#             title=book.title,
+#             description=book.description,
+#             publication_year=book.publication_year,
+#             pages_count=book.pages_count,
+#             cover_url=book.cover_url,
+#             authors=book.authors,
+#             categories=book.categories,
+#             reading_status=item.reading_status,
+#             current_page=item.current_page,
+#             rating=item.rating,
+#             review=item.review,
+#             is_public=item.is_public,
+#             created_at=item.created_at
+#         ))
+
+#     return result
+
+
 @api.get(
     "/users/user-books/",
     auth=JWTAuth(),
     response={200: List[BookUserAndBooksSchemaOut], 401: ErrorSchema},
 )
 def get_user_user_book(request):
-    user_books = request.user.user_books.all()
-    result = []
-
-    for item in user_books:
-        book = item.book  
-        result.append(BookUserAndBooksSchemaOut(
-            user_book=item.id,
-            book_id=book.id,
-            user=item.user.id,
-            title=book.title,
-            description=book.description,
-            publication_year=book.publication_year,
-            pages_count=book.pages_count,
-            cover_url=book.cover_url,
-            authors=book.authors,
-            categories=book.categories,
-            reading_status=item.reading_status,
-            current_page=item.current_page,
-            rating=item.rating,
-            review=item.review,
-            is_public=item.is_public,
-            created_at=item.created_at
-        ))
-
-    return result
+    return (
+        request.user.user_books
+        .select_related("book")
+        .all()
+    )

@@ -9,15 +9,16 @@ from books.handlers.api_book import autocomplite_api
 from comments.api import api as comments_api
 from accounts.api import api as accounts_api
 
-
 from ninja_jwt.controller import (     
     NinjaJWTDefaultController,
 )
-
+from ninja import Swagger
 from ninja_extra import NinjaExtraAPI
+from ninja import Redoc
 
+    
+api = NinjaExtraAPI(title="Book API")
 
-api = NinjaExtraAPI()
 api.register_controllers(NinjaJWTDefaultController)
 
 

@@ -11,23 +11,39 @@ class BookUserSchemaOut(ModelSchema):
         fields = "__all__"
 
 
-class BookUserAndBooksSchemaOut(Schema):
-    user_book: int 
-    title: str
-    description: str
-    publication_year: int
-    pages_count: int
-    cover_url: Optional[str] = None
-    authors: str
-    categories: Optional[str] = None
-    book_id: int
-    user: int 
-    reading_status: str
-    current_page: int
-    rating: int
-    review: str
-    is_public: bool
-    created_at: datetime
+class BookSchemaOut(ModelSchema):
+    class Meta:
+        model = Book
+        fields = "__all__"
+
+
+class BookUserAndBooksSchemaOut(ModelSchema):
+    book: BookSchemaOut
+
+    class Meta:
+        model = UserBook
+        exclude = ["book",]
+
+
+
+
+# class BookUserAndBooksSchemaOut(Schema):
+#     user_book: int 
+#     title: str
+#     description: str
+#     publication_year: int
+#     pages_count: int
+#     cover_url: Optional[str] = None
+#     authors: str
+#     categories: Optional[str] = None
+#     book_id: int
+#     user: int 
+#     reading_status: str
+#     current_page: int
+#     rating: int
+#     review: str
+#     is_public: bool
+#     created_at: datetime
         
 class ErrorSchema(Schema):
     detail: str
