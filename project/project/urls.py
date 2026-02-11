@@ -23,7 +23,7 @@ api.register_controllers(NinjaJWTDefaultController)
 
 
 api.add_router("/books/", books_api)
-api.add_router("/books/", autocomplite_api)
+api.add_router("/autocomplite/", autocomplite_api)
 api.add_router("/auth/", accounts_api)
 api.add_router("/comments/", comments_api)
 api.add_router("/users/", users_api)

@@ -176,22 +176,31 @@ class UserBookTest(BaseBookTestCase):
         self.assertEqual(response.json()["detail"], 'Forbidden')
 
     
-    # @authorized(user_attr="user1")
-    # def test_list_me_user_book_to_200(self):
-    #     response = self.client.get("/api/user-books/me/")
+    @authorized(user_attr="user1")
+    def test_list_user_book_full_to_200(self):
+        response = self.client.get("/api/user-books/full/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 2)
+
+        response = self.client.get(f"/api/user-books/full/?user_book_id={self.user_book1.id}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+
+        response = self.client.get(f"/api/user-books/full/?user_book_id={self.user_book1.id}&me=True/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+
+        
 
 
-    #     print(response.json())
-    #     # self.assertEqual(response.status_code, 200)
-    #     # self.assertEqual(len(response.json()), 2)
-    #     # self.assertEqual(
-    #     #     {b["id"] for b in response.json()},
-    #     #     {self.user_book1.id, self.user_book2.id}
-    #     # )
 
-    # def test_list_me_user_book_401(self):
-    #     # Без авторизации
-    #     response = self.client.get("/api/user-books/me/")
 
-    #     self.assertEqual(response.status_code, 401)
-    #     self.assertEqual(response.json()["detail"], "Unauthorized")
+
+    def test_list_me_user_book_401(self):
+        response = self.client.get("/api/user-books/me/")
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json()["detail"], "Unauthorized")
