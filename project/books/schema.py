@@ -22,8 +22,7 @@ class BookUserAndBooksSchemaOut(ModelSchema):
 
     class Meta:
         model = UserBook
-        exclude = ["book",]
-
+        exclude = ["book"]
 
 
 

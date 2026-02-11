@@ -8,12 +8,51 @@ from books.schema import (
     BookUserAndBooksSchemaOut,
 )
 from books.models import UserBook
-from typing import List
+from typing import List, Optional
 from django.shortcuts import get_object_or_404
 from ninja_jwt.authentication import JWTAuth
 
 
 api = Router(tags=["User_Books"])
+
+
+
+@api.get(
+        "/full/",
+        auth=JWTAuth(),
+        response={
+        200: List[BookUserAndBooksSchemaOut],
+        401: ErrorSchema,
+        }
+    )
+def list_user_books_full(
+        request,
+        me: Optional[bool] = False,
+        authors: Optional[str] = None,
+        status: Optional[str] = None, 
+        user_book_id: Optional[int] = None,   
+    ):
+    """
+    List UserBooks.
+    - ?me=true → только текущий пользователь
+    - без параметра → все записи
+    """
+    qs = UserBook.objects.select_related("book").all()
+
+    if me:
+        qs = qs.filter(user=request.user)
+
+    if authors:
+        qs = qs.filter(authors=authors)
+
+    if status:
+        qs = qs.filter(reading_status=status)
+    
+    if user_book_id:
+        qs = qs.filter(id=user_book_id)
+
+    return qs
+
 
 @api.post(
         "/",
@@ -40,18 +79,30 @@ def create_user_book(request, payload: BookUserTestSchemaIn):
         auth=JWTAuth(),
         response=List[BookUserSchemaOut]
     )
-def list_users_book(request):
+def list_users_book(
+    request,        
+    me: Optional[bool] = False,
+    authors: Optional[str] = None,
+    status: Optional[str] = None, 
+    user_book_id: Optional[int] = None,   
+    ):
     qs = UserBook.objects.all()
+
+
+    if me:
+        qs = qs.filter(user=request.user)
+
+    if authors:
+        qs = qs.filter(authors=authors)
+
+    if status:
+        qs = qs.filter(reading_status=status)
+    
+    if user_book_id:
+        qs = qs.filter(id=user_book_id)
+
     return qs
 
-@api.get(
-        "/{user_book_id}/",
-        auth=JWTAuth(),
-        response={200: BookUserSchemaOut, 404: ErrorSchema},
-    )
-def get_user_book(request, user_book_id:int):
-    qs = get_object_or_404(UserBook, id=user_book_id)
-    return qs
 
 
 @api.put(
@@ -97,7 +148,7 @@ def delete_user_book(request, user_book_id: int):
 
 
 # @api.get(
-#     "/users/user-books/",
+#     "/me/",
 #     auth=JWTAuth(),
 #     response={200: List[BookUserAndBooksSchemaOut], 401: ErrorSchema},
 # )
@@ -129,14 +180,24 @@ def delete_user_book(request, user_book_id: int):
 #     return result
 
 
-@api.get(
-    "/me/",
-    auth=JWTAuth(),
-    response={200: List[BookUserAndBooksSchemaOut], 401: ErrorSchema},
-)
-def get_user_user_book(request):
-    return (
-        request.user.user_books
-        .select_related("book")
-        .all()
-    )
+# @api.get(
+#     "/me/",
+#     auth=JWTAuth(),
+#     # response={
+#     #     # 200: List[BookUserAndBooksSchemaOut],
+#     #     200: List[BookUserSchemaOut],
+#     #     401: ErrorSchema
+#     # },
+# )
+# def get_user_user_book(request):
+#     return request.user.id
+#     # return ("ok"
+#     #     request.user.user_books.all()
+#     #     # .select_related("book")
+
+#     # )
+
+#     # return "OK"
+
+
+
