@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from ninja import Router
 from ninja_jwt.authentication import JWTAuth
 
@@ -17,7 +17,7 @@ from django.shortcuts import get_object_or_404
 api = Router(tags=["Comments"])
 
 @api.post(
-        "/comments/",
+        "/",
         response={200: CommentSchemaOut, 404: ErrorSchema},
         auth=JWTAuth(),
     )
@@ -25,13 +25,13 @@ def create_comments(request, payload: CommentSchemaIn):
 
     user_book = UserBook.objects.filter(
         pk=payload.user_book_id
-    )
+    ).first()
 
     if not user_book:
         return 404, {"detail": "Invalid user book"}
 
     comment = Comment.objects.create(
-        user=request.auth,
+        user=request.user,
         user_book=user_book,
         text=payload.text
     )
@@ -39,33 +39,40 @@ def create_comments(request, payload: CommentSchemaIn):
 
 
 
-@api.get("/comments/", response=List[CommentSchemaOut])
-def list_all_comments(request):
-    return Comment.objects.all()
+@api.get(
+        "/",
+        auth=JWTAuth(),
+        response=List[CommentSchemaOut]
+    )
+def get_comments(
+    request,
+    me: Optional[bool] = True,        
+    user_book_id: Optional[int] = None, 
+    comment_id: Optional[int] = None,   
+    ):
+    qs = Comment.objects.all()
 
-
-@api.get("/comments/user-book/{user_book_id}/", response=List[CommentSchemaOut])
-def list_user_book_comments(request, user_book_id: int):
-    user_book = get_object_or_404(UserBook, pk=user_book_id)
+    if me:
+        qs = qs.filter(user=request.user)
     
-    return user_book.comments.all()
+    if comment_id:
+        qs = qs.filter(id=comment_id)
+    
+    if user_book_id:
+        qs = qs.filter(user_book=user_book_id)
+    return qs
 
-
-        
-@api.get("/comments/{comment_id}/", response=CommentSchemaOut)
-def get_comment(request, comment_id: int):
-    comment = get_object_or_404(Comment, pk=comment_id)
-    return comment
 
 @api.put(
-        "/comments/{comment_id}/",
+        "/",
+        # "/{comment_id}/",
         auth=JWTAuth(),
         response={200: CommentSchemaOut, 403: ErrorSchema},
     )
 def update_comment(
         request,
+        payload: CommentUpdateSchemaIn,        
         comment_id: int,
-        payload: CommentUpdateSchemaIn
     ):
     user = request.auth
     comment = get_object_or_404(Comment, id=comment_id)
@@ -77,8 +84,11 @@ def update_comment(
     return 403, {"detail": "Forbidden"}
 
                     
-@api.delete("/comments/{comment_id}/", auth=JWTAuth(),)
-def delete_book(request, comment_id: int):
+@api.delete('/',auth=JWTAuth(),)
+def delete_comment(
+        request,
+        comment_id: int
+    ):
     
     comment = get_object_or_404(Comment, id=comment_id)
     comment.delete()

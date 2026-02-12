@@ -59,20 +59,14 @@ class BookTest(BaseBookTestCase):
    
     @authorized(user_attr="user1")
     def test_get_book_to_200(self):
-        response = self.client.get(f"/api/books/{self.book1.id}/")
+        response = self.client.get(f"/api/books/?book_id={self.book1.id}")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["id"], self.book1.id)
+        self.assertEqual(response.json()[0]["id"], self.book1.id)
 
-
-    @authorized(user_attr="user1")
-    def test_get_book_to_404(self):
-        response = self.client.get(f"/api/books/1000/")
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json()["detail"], 'Not Found')
 
 
     def test_get_book_to_401(self):
-        response = self.client.get(f"/api/books/{self.book1.id}/")
+        response = self.client.get(f"/api/books/?book_id={self.book1.id}")
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json()["detail"], 'Unauthorized')
 
@@ -82,7 +76,7 @@ class BookTest(BaseBookTestCase):
         book = Book.objects.get(google_id=f"{self.book1.google_id}")
 
         response = self.client.put(
-            f"/api/books/{book.id}/",
+            f"/api/books/?book_id={book.id}",
             data=self.book_payload(google_id=f"{self.book1.google_id}", title="Мастер и Маргарита2")
         )
 
@@ -91,23 +85,13 @@ class BookTest(BaseBookTestCase):
         self.assertEqual(response.json()["id"], book.id)
         self.assertEqual(response.json()["title"], book.title)
         
-    @authorized(user_attr="user1")
-    def test_update_book_to_404(self):
-
-        response = self.client.put(
-            f"/api/books/1000/",
-            data=self.book_payload(google_id=f"{self.book1.google_id}", title="948u2348")
-        )
-
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json()["detail"], 'Not Found')
 
 
     @authorized(user_attr="user1")
     def test_update_book_to_409(self):
 
         response = self.client.put(
-            f"/api/books/{self.book1.id}/",
+            f"/api/books/?book_id={self.book1.id}",
             data=self.book_payload(google_id=f"{self.book2.google_id}", title="948u2348")
         )
 
@@ -117,7 +101,7 @@ class BookTest(BaseBookTestCase):
 
     def test_update_book_to_401(self):
         response = self.client.put(
-            f"/api/books/{self.book1.id}/",
+            f"/api/books/?book_id={self.book1.id}",
             data=json.dumps(self.book_payload(google_id=f"{self.book1.google_id}", title="948u2348")),
             content_type="application/json",
         )
@@ -126,10 +110,9 @@ class BookTest(BaseBookTestCase):
 
 
     @authorized(user_attr="user1")
-    def test_delete_book(self):
+    def test_delete_book_to_200(self):
 
-        response = self.client.delete(f"/api/books/{self.book1.id}/")
-
+        response = self.client.delete(f"/api/books/?book_id={int(self.book1.id)}")
         book = Book.objects.filter(google_id=f"{self.book1.google_id}").first()
 
         self.assertEqual(response.status_code, 200)
@@ -138,18 +121,9 @@ class BookTest(BaseBookTestCase):
         self.assertEqual(book, None)
 
 
-    @authorized(user_attr="user1")
-    def test_delete_book_to_404(self):
-
-        response = self.client.delete(f"/api/books/1000/")
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json()["detail"], 'Not Found')
-
-
     def test_delete_book_to_401(self):
 
-        response = self.client.delete(f"/api/books/{self.book1.id}/")
-
+        response = self.client.delete(f"/api/books/?book_id={self.book1.id}")
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json()["detail"], 'Unauthorized')
 

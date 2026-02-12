@@ -8,12 +8,13 @@ from books.schema import (
 )
 from ninja.errors import HttpError
 from books.models import Book
-from typing import List
+from typing import List, Optional
 from django.shortcuts import get_object_or_404
 import requests
 from ninja_jwt.authentication import JWTAuth
 from project.settings import GOOGLE_BOOKS_API_KEY
 from django.conf import settings
+
 
 
 api = Router(tags=["Books"])
@@ -109,22 +110,28 @@ def create_book(request, payload: BookSchemaIn):
         auth=JWTAuth(),
         response=List[BookSchemaOut]
     )
-def list_books(request):
+def list_books(
+    request,        
+    authors: Optional[str] = None,
+    status: Optional[str] = None, 
+    book_id: Optional[int] = None,   
+    ):
     qs = Book.objects.all()
-    return qs
 
-@api.get(
-        "/{book_id}/",
-        auth=JWTAuth(),
-        response=BookSchemaOut
-    )
-def get_book(request, book_id:int):
-    qs = get_object_or_404(Book, id=book_id)
+    if authors:
+        qs = qs.filter(authors=authors)
+
+    if status:
+        qs = qs.filter(reading_status=status)
+    
+    if book_id:
+        qs = qs.filter(id=book_id)
+
     return qs
 
 
 @api.put(
-        "/{book_id}/",
+        "/",
         auth=JWTAuth(),
         response={200: BookSchemaOut, 409: ErrorSchema}
     )
@@ -143,10 +150,7 @@ def update_book(request, book_id: int, payload: BookSchemaIn):
     return book
 
 
-@api.delete(
-        "/{book_id}/",
-        auth=JWTAuth(),
-    )
+@api.delete("/", auth=JWTAuth())
 def delete_book(request, book_id: int):
     book = get_object_or_404(Book, id=book_id)
     book.delete()

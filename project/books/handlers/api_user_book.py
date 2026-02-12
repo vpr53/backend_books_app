@@ -81,7 +81,7 @@ def create_user_book(request, payload: BookUserTestSchemaIn):
     )
 def list_users_book(
     request,        
-    me: Optional[bool] = False,
+    me: Optional[bool] = True,
     authors: Optional[str] = None,
     status: Optional[str] = None, 
     user_book_id: Optional[int] = None,   
