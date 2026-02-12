@@ -126,7 +126,7 @@ def list_books(
     
     if book_id:
         qs = qs.filter(id=book_id)
-
+    
     return qs
 
 

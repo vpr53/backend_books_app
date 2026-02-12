@@ -31,6 +31,7 @@ def list_user_books_full(
         authors: Optional[str] = None,
         status: Optional[str] = None, 
         user_book_id: Optional[int] = None,   
+        title: Optional[str] = None
     ):
     """
     List UserBooks.
@@ -50,6 +51,9 @@ def list_user_books_full(
     
     if user_book_id:
         qs = qs.filter(id=user_book_id)
+    
+    if title:
+        qs = qs.filter(title=title)
 
     return qs
 
@@ -85,9 +89,9 @@ def list_users_book(
     authors: Optional[str] = None,
     status: Optional[str] = None, 
     user_book_id: Optional[int] = None,   
+    title: Optional[str] = None,
     ):
     qs = UserBook.objects.all()
-
 
     if me:
         qs = qs.filter(user=request.user)
@@ -100,6 +104,10 @@ def list_users_book(
     
     if user_book_id:
         qs = qs.filter(id=user_book_id)
+    
+    if title:
+        qs = qs.filter(title=title)
+
 
     return qs
 
