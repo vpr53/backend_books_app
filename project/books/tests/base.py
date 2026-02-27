@@ -1,13 +1,13 @@
 from django.test import TestCase
-from books.models import Book, UserBook
+from books.models import BookModels, UserBook
 from accounts.models import User
 from django.test import Client
 
 
 class BaseBookTestCase(TestCase):
     def setUp(self):
-        self.book1 = Book.objects.create(google_id="674291498137", title="Погода ТОП")
-        self.book2 = Book.objects.create(google_id="674293123123", title="Погода Плохая")
+        self.book1 = BookModels.objects.create(google_id="674291498137", title="Погода ТОП")
+        self.book2 = BookModels.objects.create(google_id="674293123123", title="Погода Плохая")
         self.user1 = User.objects.create_user(
             email="user@mail.ru",
             password="12345",

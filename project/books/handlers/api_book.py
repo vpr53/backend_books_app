@@ -7,7 +7,7 @@ from books.schema import (
     ErrorDetailSchema,
 )
 from ninja.errors import HttpError
-from books.models import Book
+from books.models import BookModels
 from typing import List, Optional
 from django.shortcuts import get_object_or_404
 import requests
@@ -98,10 +98,10 @@ def get(request, title: str):
         response={200: BookSchemaOut, 409: ErrorSchema}
     )
 def create_book(request, payload: BookSchemaIn):
-    if Book.objects.filter(google_id=payload.google_id).exists():
-        return 409, {"detail":"Book with this Google ID already exists"}
+    if BookModels.objects.filter(google_id=payload.google_id).exists():
+        return 409, {"detail":"BookModels with this Google ID already exists"}
     
-    book = Book.objects.create(**payload.dict())
+    book = BookModels.objects.create(**payload.dict())
     return book
 
 
@@ -116,7 +116,7 @@ def list_books(
     status: Optional[str] = None, 
     book_id: Optional[int] = None,   
     ):
-    qs = Book.objects.all()
+    qs = BookModels.objects.all()
 
     if authors:
         qs = qs.filter(authors=authors)
@@ -136,11 +136,11 @@ def list_books(
         response={200: BookSchemaOut, 409: ErrorSchema}
     )
 def update_book(request, book_id: int, payload: BookSchemaIn):
-    book = get_object_or_404(Book, id=book_id)
+    book = get_object_or_404(BookModels, id=book_id)
 
     if (
         payload.google_id != book.google_id
-        and Book.objects.filter(google_id=payload.google_id).exclude(id=book_id).exists()
+        and BookModels.objects.filter(google_id=payload.google_id).exclude(id=book_id).exists()
     ):
         return 409, {"detail": "google_id already exists"}
     
@@ -152,7 +152,7 @@ def update_book(request, book_id: int, payload: BookSchemaIn):
 
 @api.delete("/", auth=JWTAuth())
 def delete_book(request, book_id: int):
-    book = get_object_or_404(Book, id=book_id)
+    book = get_object_or_404(BookModels, id=book_id)
     book.delete()
     return 200, {"detail": "The book was successfully deleted"}
 

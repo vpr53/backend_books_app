@@ -68,7 +68,7 @@ def create_user_book(request, payload: BookUserTestSchemaIn):
         book_id=payload.book_id,
         user=request.user
     ).exists():
-        return 409, {"detail": "Book with this ID already exists"}
+        return 409, {"detail": "BookModels with this ID already exists"}
     user_book = UserBook.objects.create(
         user=request.user,
         **payload.dict()

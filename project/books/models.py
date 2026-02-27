@@ -4,7 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 
 
-class Book(models.Model):
+class BookModels(models.Model):
     google_id = models.CharField("Google ID", max_length=50, unique=True)
     title = models.CharField("Название", max_length=200)
     description = models.TextField("Описание", blank=True)
@@ -36,7 +36,7 @@ class UserBook(models.Model):
         verbose_name="Пользователь"
     )
     book = models.ForeignKey(
-        Book, 
+        BookModels, 
         on_delete=models.CASCADE, 
         related_name='user_books',
         verbose_name="Книга"

@@ -1,4 +1,4 @@
-from books.models import Book
+from books.models import BookModels
 from utils.decorators import authorized
 import json
 from .base import BaseBookTestCase
@@ -33,7 +33,7 @@ class BookTest(BaseBookTestCase):
 
         data = response.json()
         self.assertEqual(data["title"], "Мастер и Маргарита")
-        self.assertTrue(Book.objects.filter(id=data["id"]).exists())
+        self.assertTrue(BookModels.objects.filter(id=data["id"]).exists())
         self.assertEqual(response.status_code, 200)
 
 
@@ -73,14 +73,14 @@ class BookTest(BaseBookTestCase):
 
     @authorized(user_attr="user1")
     def test_update_book_to_200(self):
-        book = Book.objects.get(google_id=f"{self.book1.google_id}")
+        book = BookModels.objects.get(google_id=f"{self.book1.google_id}")
 
         response = self.client.put(
             f"/api/books/?book_id={book.id}",
             data=self.book_payload(google_id=f"{self.book1.google_id}", title="Мастер и Маргарита2")
         )
 
-        book = Book.objects.get(google_id=f"{self.book1.google_id}")
+        book = BookModels.objects.get(google_id=f"{self.book1.google_id}")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["id"], book.id)
         self.assertEqual(response.json()["title"], book.title)
@@ -113,7 +113,7 @@ class BookTest(BaseBookTestCase):
     def test_delete_book_to_200(self):
 
         response = self.client.delete(f"/api/books/?book_id={int(self.book1.id)}")
-        book = Book.objects.filter(google_id=f"{self.book1.google_id}").first()
+        book = BookModels.objects.filter(google_id=f"{self.book1.google_id}").first()
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["detail"], 'The book was successfully deleted')

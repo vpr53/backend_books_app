@@ -1,7 +1,7 @@
 from django.contrib import admin
-from books.models import Book, UserBook
+from books.models import BookModels, UserBook
 
-@admin.register(Book)
+@admin.register(BookModels)
 class BookAdmin(admin.ModelAdmin):
     name = 'Книги'
     list_display = ["title", "authors", "categories"]

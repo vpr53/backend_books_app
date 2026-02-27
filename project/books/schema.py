@@ -1,6 +1,6 @@
 from ninja import Schema
 from ninja.orm import ModelSchema
-from books.models import Book, UserBook
+from books.models import BookModels, UserBook
 from accounts.models import User
 from datetime import datetime, date
 from typing import Optional
@@ -13,7 +13,7 @@ class BookUserSchemaOut(ModelSchema):
 
 class BookSchemaOut(ModelSchema):
     class Meta:
-        model = Book
+        model = BookModels
         fields = "__all__"
 
 
@@ -73,19 +73,19 @@ class BookUserTestSchemaIn(Schema):
 
 class BookSchemaIn(ModelSchema):
     class Meta:
-        model = Book
+        model = BookModels
         exclude = ["id"]
 
 class BookSchemaOut(ModelSchema):
     class Meta:
-        model = Book
+        model = BookModels
         fields = "__all__"
 
 class BooksAutocompleteShemaOut(ModelSchema):
     publication_year :str
 
     class Meta:
-        model = Book
+        model = BookModels
         exclude = ['id']
 
 class UserSchemaIn(ModelSchema):

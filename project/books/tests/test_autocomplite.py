@@ -1,6 +1,6 @@
 from unittest.mock import patch
 from books.handlers.api_book import get
-from books.models import Book
+from books.models import BookModels
 from books.tests.base import BaseBookTestCase
 
 class AutocompleteTest(BaseBookTestCase):
