@@ -1,13 +1,13 @@
 from ninja import Schema
 from ninja.orm import ModelSchema
-from core.infra.django_apps.books.models import BookModels, UserBook
-from core.infra.django_apps.accounts.models import User
+from core.infra.django_apps.books.models import BookModels, UserBookModels
+from core.infra.django_apps.accounts.models import UserModels
 from datetime import datetime, date
 from typing import Optional
 
 class BookUserSchemaOut(ModelSchema):
     class Meta:
-        model = UserBook
+        model = UserBookModels
         fields = "__all__"
 
 
@@ -21,7 +21,7 @@ class BookUserAndBooksSchemaOut(ModelSchema):
     book: BookSchemaOut
 
     class Meta:
-        model = UserBook
+        model = UserBookModels
         exclude = ["book"]
 
 
@@ -54,12 +54,12 @@ class ErrorDetailSchema(Schema):
 
 class BookUserSchemaIn(ModelSchema):
     class Meta:
-        model = UserBook
+        model = UserBookModels
         exclude = ["user", "id", "created_at"]
 
 # class BookUserTestSchemaIn(ModelSchema):
 #     class Meta:
-#         model = UserBook
+#         model = UserBookModels
 #         model_fields = ['book_id', 'reading_status', 'current_page', rating] # !!!
 
 
@@ -84,13 +84,13 @@ class BookSchemaOut(ModelSchema):
 
 class UserSchemaIn(ModelSchema):
     class Meta:
-        model = User
+        model = UserModels
         exclude = ["id", "groups", "user_permissions"]
 
 
 class UserSchemaOut(ModelSchema):
     class Meta:
-        model = User
+        model = UserModels
         fields = ("__all__")
 
 

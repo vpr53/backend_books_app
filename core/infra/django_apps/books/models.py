@@ -1,5 +1,5 @@
 from django.db import models
-from core.infra.django_apps.accounts.models import User
+from core.infra.django_apps.accounts.models import UserModels
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 
@@ -22,7 +22,7 @@ class BookModels(models.Model):
         return self.title
     
 
-class UserBook(models.Model):
+class UserBookModels(models.Model):
     class ReadingStatus(models.TextChoices):
         PLANNED = 'planned', 'Запланировано'
         READING = 'reading', 'Читаю'
@@ -30,7 +30,7 @@ class UserBook(models.Model):
         ABANDONED = 'abandoned', 'Брошено' 
     
     user = models.ForeignKey(
-        User, 
+        UserModels, 
         on_delete=models.CASCADE, 
         related_name='user_books',
         verbose_name="Пользователь"

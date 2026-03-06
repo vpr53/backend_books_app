@@ -12,7 +12,7 @@ SIMPLE_JWT = {
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+BASE_URL = "https://127.0.0.1"
 
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = True
@@ -132,7 +132,7 @@ USE_TZ = True
 
 
 STATIC_URL = 'static/'
-AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = 'accounts.UserModels'
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 24 часа
@@ -147,3 +147,12 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 GOOGLE_BOOKS_API_KEY = config('GOOGLE_BOOKS_API_KEY')
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}

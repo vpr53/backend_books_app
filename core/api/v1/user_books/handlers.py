@@ -6,7 +6,7 @@ from .schema import (
     SuccessfulSchema,
     BookUserAndBooksSchemaOut,
 )
-from core.infra.django_apps.books.models import UserBook
+from core.infra.django_apps.books.models import UserBookModels
 from typing import List, Optional
 from django.shortcuts import get_object_or_404
 from ninja_jwt.authentication import JWTAuth
@@ -35,7 +35,7 @@ def list_user_books_full(
     - ?me=true → только текущий пользователь
     - без параметра → все записи
     """
-    qs = UserBook.objects.select_related("book").all()
+    qs = UserBookModels.objects.select_related("book").all()
 
     if me:
         qs = qs.filter(user=request.user)
@@ -61,12 +61,12 @@ def list_user_books_full(
         response={200: BookUserSchemaOut, 409: ErrorSchema},
     )
 def create_user_book(request, payload: BookUserTestSchemaIn):
-    if UserBook.objects.filter(
+    if UserBookModels.objects.filter(
         book_id=payload.book_id,
         user=request.user
     ).exists():
         return 409, {"detail": "Book with this ID already exists"}
-    user_book = UserBook.objects.create(
+    user_book = UserBookModels.objects.create(
         user=request.user,
         **payload.dict()
     )   
@@ -88,7 +88,7 @@ def list_users_book(
     user_book_id: Optional[int] = None,   
     title: Optional[str] = None,
     ):
-    qs = UserBook.objects.all()
+    qs = UserBookModels.objects.all()
 
     if me:
         qs = qs.filter(user=request.user)
@@ -120,7 +120,7 @@ def list_users_book(
         }
     )
 def update_user_book(request, user_book_id: int, payload: BookUserTestSchemaIn):
-    user_book = UserBook.objects.filter(id=user_book_id).first()
+    user_book = UserBookModels.objects.filter(id=user_book_id).first()
     if not user_book:
         return 404, {"detail": "Not Found"}
 
@@ -143,7 +143,7 @@ def update_user_book(request, user_book_id: int, payload: BookUserTestSchemaIn):
         }
     )
 def delete_user_book(request, user_book_id: int):
-    user_book = get_object_or_404(UserBook, id=user_book_id)
+    user_book = get_object_or_404(UserBookModels, id=user_book_id)
 
     if user_book.user != request.user and not request.user.is_superuser:
         return 403, {"detail": "Forbidden"}

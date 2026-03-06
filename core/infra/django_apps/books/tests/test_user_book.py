@@ -1,4 +1,4 @@
-from core.infra.django_apps.books.models import UserBook
+from core.infra.django_apps.books.models import UserBookModels
 
 from core.infra.django_apps.utils.decorators import authorized
 from .base import BaseBookTestCase
@@ -35,7 +35,7 @@ class UserBookTest(BaseBookTestCase):
         self.assertEqual(data["book"], self.book2.id)
         self.assertEqual(data["user"], self.user1.id)
 
-        self.assertTrue(UserBook.objects.filter(id=data["book"]).exists())
+        self.assertTrue(UserBookModels.objects.filter(id=data["book"]).exists())
         self.assertEqual(response.status_code, 200) 
 
 
@@ -93,7 +93,7 @@ class UserBookTest(BaseBookTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
 
-        ub = UserBook.objects.get(id=self.user_book1.id)
+        ub = UserBookModels.objects.get(id=self.user_book1.id)
         self.assertEqual(ub.rating, 5)
         self.assertEqual(data["rating"], 5)
 
@@ -141,7 +141,7 @@ class UserBookTest(BaseBookTestCase):
 
         response = self.client.delete(f"/api/user-books/{self.user_book1.id}/")
 
-        user_book = UserBook.objects.filter(id=f"{self.user_book1.id}").first()
+        user_book = UserBookModels.objects.filter(id=f"{self.user_book1.id}").first()
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["detail"], 'The post was successfully deleted')

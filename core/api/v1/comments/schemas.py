@@ -1,11 +1,11 @@
 from ninja import Schema
 from ninja.orm import ModelSchema
-from core.infra.django_apps.comments.models import Comment
+from core.infra.django_apps.comments.models import CommentModels
 
 
 class CommentSchemaOut(ModelSchema):
     class Meta:
-        model = Comment
+        model = CommentModels
         fields = "__all__"
 
 

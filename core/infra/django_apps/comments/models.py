@@ -1,17 +1,17 @@
 from django.db import models
-from core.infra.django_apps.accounts.models import User
-from core.infra.django_apps.books.models import UserBook
+from core.infra.django_apps.accounts.models import UserModels
+from core.infra.django_apps.books.models import UserBookModels
 
 
-class Comment(models.Model):
+class CommentModels(models.Model):
     user_book = models.ForeignKey(
-        UserBook,
+        UserBookModels,
         on_delete=models.CASCADE,
         related_name="comments",
         verbose_name="Книга пользователя"
     )
     user = models.ForeignKey(
-        User,
+        UserModels,
         on_delete=models.CASCADE,
         related_name="comments",
         verbose_name="Автор"

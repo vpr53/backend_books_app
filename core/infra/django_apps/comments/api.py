@@ -9,8 +9,8 @@ from comments.schema import (
     UserSchema,
     CommentUpdateSchemaIn,
     )
-from comments.models import Comment
-from books.models import UserBook
+from comments.models import CommentModels
+from books.models import UserBookModels
 
 from django.shortcuts import get_object_or_404
 
@@ -23,14 +23,14 @@ api = Router(tags=["Comments"])
     )
 def create_comments(request, payload: CommentSchemaIn):
 
-    user_book = UserBook.objects.filter(
+    user_book = UserBookModels.objects.filter(
         pk=payload.user_book_id
     ).first()
 
     if not user_book:
         return 404, {"detail": "Invalid user book"}
 
-    comment = Comment.objects.create(
+    comment = CommentModels.objects.create(
         user=request.user,
         user_book=user_book,
         text=payload.text
@@ -50,7 +50,7 @@ def get_comments(
     user_book_id: Optional[int] = None, 
     comment_id: Optional[int] = None,   
     ):
-    qs = Comment.objects.all()
+    qs = CommentModels.objects.all()
 
     if me:
         qs = qs.filter(user=request.user)
@@ -75,7 +75,7 @@ def update_comment(
         comment_id: int,
     ):
     user = request.auth
-    comment = get_object_or_404(Comment, id=comment_id)
+    comment = get_object_or_404(CommentModels, id=comment_id)
 
     if comment.user == user or user.is_staff():
         comment.text = payload.text
@@ -90,7 +90,7 @@ def delete_comment(
         comment_id: int
     ):
     
-    comment = get_object_or_404(Comment, id=comment_id)
+    comment = get_object_or_404(CommentModels, id=comment_id)
     comment.delete()
 
     return 200, {"detail": "The user was successfully deleted"}

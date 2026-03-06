@@ -1,11 +1,22 @@
 from ninja import Router
 from ninja.errors import HttpError
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth import authenticate
-from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 
-from core.infra.django_apps.accounts.models import User
+from core.applications.accounts.use_case import(
+    RegisterUseCase,
+    VerifyEmailUseCase,
+    LoginUseCase,
+    PasswordResetUseCase,
+    PasswordResetConfirm,
+    PasswordResetCompleteUseCase,
+)
+from core.infra.django_apps.accounts.repository import DjangoAccountsRepository
+from core.infra.django_apps.accounts.service.service import (
+    EmailVerifySenderService,
+    VerifyPasswordSenderService,
+)
+from core.infra.django_apps.accounts.models import UserModels
 from core.infra.django_apps.accounts.schema import (
     RegisterSchema, 
     LoginSchema,
@@ -15,6 +26,12 @@ from core.infra.django_apps.accounts.schema import (
     PasswordResetInSchema,
     PasswordResetCompleteSchema,
     )
+
+from core.domain.accounts.exeptions import (
+    UserAlreadyExistsError,
+    InvalidTokenError,
+    UserNotFoundError,
+)
 from .utils import send_action_email
 from ninja.security import django_auth
 
@@ -35,22 +52,33 @@ api = Router(tags=["Auth"])
     )
 def register(request, payload: RegisterSchema):
 
-    if User.objects.filter(email=payload.email).exists():
-        raise HttpError(409, "Email already registered")
-
-    user = User.objects.create_user(
-        **payload.dict(),
-        is_active=False,
+    use_case = RegisterUseCase(
+        repo=DjangoAccountsRepository,
+        token_send_service=EmailVerifySenderService,
     )
+    
+    try:
+        use_case.execute(payload.email, payload.password)
+    except UserAlreadyExistsError:
+        return 409, {"detail": "Email already registered"}
 
-    send_action_email(
-        user=user,
-        request=request,
-        path="/api/auth/verify-email", 
-        subject="Подтвердите регистрацию",
-        template="emails/verify_email.html",
-        msg="Если вы не регистрировались — просто проигнорируйте письмо.",
-    )
+
+    # if UserModels.objects.filter(email=payload.email).exists():
+    #     raise HttpError(409, "Email already registered")
+
+    # user = UserModels.objects.create_user(
+    #     **payload.dict(),
+    #     is_active=False,
+    # )
+
+    # send_action_email(
+    #     user=user,
+    #     request=request,
+    #     path="/api/auth/verify-email", 
+    #     subject="Подтвердите регистрацию",
+    #     template="emails/verify_email.html",
+    #     msg="Если вы не регистрировались — просто проигнорируйте письмо.",
+    # )
 
     return 201, {"detail": "Check your email to verify account"}
 
@@ -67,8 +95,8 @@ def register(request, payload: RegisterSchema):
 def verify_email(request, uid: str, token: str):
     try:
         user_id = force_str(urlsafe_base64_decode(uid))
-        user = User.objects.get(pk=user_id)
-    except (User.DoesNotExist, ValueError, TypeError):
+        user = UserModels.objects.get(pk=user_id)
+    except (UserModels.DoesNotExist, ValueError, TypeError):
         raise HttpError(400, "Invalid verification link")
 
     if not default_token_generator.check_token(user, token):
@@ -100,7 +128,7 @@ def login(request, payload: LoginSchema):
 
 @api.post("password-reset/", response={200: SuccessfulSchema})
 def password_reset(request, payload: PasswordResetInSchema):
-    user = User.objects.filter(email=payload.email).first()
+    user = UserModels.objects.filter(email=payload.email).first()
 
     if user:
         send_action_email(
@@ -122,7 +150,7 @@ def password_reset_confirm(request, uid, token):
     if not uid or not token:
         return 400, {"detail": "Invalid link"}
     user_id = force_str(urlsafe_base64_decode(uid))
-    user = User.objects.filter(pk=user_id).first()
+    user = UserModels.objects.filter(pk=user_id).first()
 
     if not user:
         return 400, {"detail": "Invalid link"}
@@ -139,7 +167,7 @@ def password_reset_confirm(request, uid, token):
     )
 def password_reset_complete(request, payload: PasswordResetCompleteSchema):
         user_id = force_str(urlsafe_base64_decode(payload.uid))
-        user = User.objects.filter(pk=user_id).first()
+        user = UserModels.objects.filter(pk=user_id).first()
 
         if not user:
             return 400, {"detail": "Invalid link"}
