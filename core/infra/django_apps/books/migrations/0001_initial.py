@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -16,41 +15,136 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='BookModels',
+            name="BookModels",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('google_id', models.CharField(max_length=50, unique=True, verbose_name='Google ID')),
-                ('title', models.CharField(max_length=200, verbose_name='Название')),
-                ('description', models.TextField(blank=True, verbose_name='Описание')),
-                ('publication_year', models.PositiveIntegerField(blank=True, null=True, verbose_name='Год издания')),
-                ('pages_count', models.PositiveIntegerField(blank=True, null=True, verbose_name='Количество страниц')),
-                ('cover_url', models.URLField(blank=True, null=True, verbose_name='Обложка')),
-                ('authors', models.CharField(blank=True, max_length=255, verbose_name='Авторы')),
-                ('categories', models.CharField(blank=True, max_length=255, null=True, verbose_name='Жанры')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "google_id",
+                    models.CharField(
+                        max_length=50, unique=True, verbose_name="Google ID"
+                    ),
+                ),
+                ("title", models.CharField(max_length=200, verbose_name="Название")),
+                ("description", models.TextField(blank=True, verbose_name="Описание")),
+                (
+                    "publication_year",
+                    models.PositiveIntegerField(
+                        blank=True, null=True, verbose_name="Год издания"
+                    ),
+                ),
+                (
+                    "pages_count",
+                    models.PositiveIntegerField(
+                        blank=True, null=True, verbose_name="Количество страниц"
+                    ),
+                ),
+                (
+                    "cover_url",
+                    models.URLField(blank=True, null=True, verbose_name="Обложка"),
+                ),
+                (
+                    "authors",
+                    models.CharField(blank=True, max_length=255, verbose_name="Авторы"),
+                ),
+                (
+                    "categories",
+                    models.CharField(
+                        blank=True, max_length=255, null=True, verbose_name="Жанры"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'книгу',
-                'verbose_name_plural': 'Книги',
+                "verbose_name": "книгу",
+                "verbose_name_plural": "Книги",
             },
         ),
         migrations.CreateModel(
-            name='UserBookModels',
+            name="UserBookModels",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('reading_status', models.CharField(choices=[('planned', 'Запланировано'), ('reading', 'Читаю'), ('completed', 'Прочитано'), ('abandoned', 'Брошено')], default='planned', max_length=20, verbose_name='Статус чтения')),
-                ('current_page', models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='Текущая страница')),
-                ('rating', models.PositiveSmallIntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(5)], verbose_name='Оценка')),
-                ('review', models.TextField(blank=True, verbose_name='Отзыв')),
-                ('is_public', models.BooleanField(default=True, verbose_name='Публичная')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')),
-                ('book', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_books', to='books.bookmodels', verbose_name='Книга')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_books', to=settings.AUTH_USER_MODEL, verbose_name='Пользователь')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "reading_status",
+                    models.CharField(
+                        choices=[
+                            ("planned", "Запланировано"),
+                            ("reading", "Читаю"),
+                            ("completed", "Прочитано"),
+                            ("abandoned", "Брошено"),
+                        ],
+                        default="planned",
+                        max_length=20,
+                        verbose_name="Статус чтения",
+                    ),
+                ),
+                (
+                    "current_page",
+                    models.PositiveSmallIntegerField(
+                        blank=True, null=True, verbose_name="Текущая страница"
+                    ),
+                ),
+                (
+                    "rating",
+                    models.PositiveSmallIntegerField(
+                        blank=True,
+                        null=True,
+                        validators=[
+                            django.core.validators.MinValueValidator(1),
+                            django.core.validators.MaxValueValidator(5),
+                        ],
+                        verbose_name="Оценка",
+                    ),
+                ),
+                ("review", models.TextField(blank=True, verbose_name="Отзыв")),
+                (
+                    "is_public",
+                    models.BooleanField(default=True, verbose_name="Публичная"),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Дата добавления"
+                    ),
+                ),
+                (
+                    "book",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_books",
+                        to="books.bookmodels",
+                        verbose_name="Книга",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_books",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Пользователь",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'книгу пользователя',
-                'verbose_name_plural': 'Книги пользователей',
-                'ordering': ['-created_at'],
-                'unique_together': {('user', 'book')},
+                "verbose_name": "книгу пользователя",
+                "verbose_name_plural": "Книги пользователей",
+                "ordering": ["-created_at"],
+                "unique_together": {("user", "book")},
             },
         ),
     ]

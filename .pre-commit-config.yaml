@@ -1,0 +1,14 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.9.1  # или актуальная версия
+    hooks:
+      - id: black
+        language_version: python3.12
+        additional_dependencies: []
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.280  # или последняя версия
+    hooks:
+      - id: ruff
+        args: [--fix]  # чтобы сразу исправлял мелкие ошибки
+        additional_dependencies: []

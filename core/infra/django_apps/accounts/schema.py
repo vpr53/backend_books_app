@@ -1,6 +1,5 @@
-from ninja import Schema, Field
-from pydantic import EmailStr, Field
-
+from ninja import Field, Schema
+from pydantic import EmailStr
 
 
 class RegisterSchema(Schema):
@@ -20,7 +19,9 @@ class PasswordResetRequestSchema(Schema):
 class PasswordResetCompleteSchema(Schema):
     uid: str
     token: str
-    new_password: str = Field(..., min_length=8, description="New password, min 8 chars")
+    new_password: str = Field(
+        ..., min_length=8, description="New password, min 8 chars"
+    )
 
 
 class AcsessRefrashSchema(Schema):
@@ -31,8 +32,10 @@ class AcsessRefrashSchema(Schema):
 class ErrorSchema(Schema):
     detail: str
 
+
 class SuccessfulSchema(Schema):
     detail: str
+
 
 class PasswordResetInSchema(Schema):
     email: str

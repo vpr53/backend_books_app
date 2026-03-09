@@ -1,7 +1,7 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
 from core.infra.django_apps.accounts.models import UserModels
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.core.exceptions import ValidationError
 
 
 class BookModels(models.Model):
@@ -9,10 +9,12 @@ class BookModels(models.Model):
     title = models.CharField("Название", max_length=200)
     description = models.TextField("Описание", blank=True)
     publication_year = models.PositiveIntegerField("Год издания", null=True, blank=True)
-    pages_count = models.PositiveIntegerField("Количество страниц", null=True, blank=True)
-    cover_url = models.URLField("Обложка", null=True, blank=True)
+    pages_count = models.PositiveIntegerField(
+        "Количество страниц", null=True, blank=True
+    )
+    cover_url = models.URLField("Обложка", blank=True)
     authors = models.CharField("Авторы", max_length=255, blank=True)
-    categories = models.CharField("Жанры", max_length=255, blank=True, null=True)
+    categories = models.CharField("Жанры", max_length=255, blank=True)
 
     class Meta:
         verbose_name = "книгу"
@@ -20,26 +22,26 @@ class BookModels(models.Model):
 
     def __str__(self):
         return self.title
-    
+
 
 class UserBookModels(models.Model):
     class ReadingStatus(models.TextChoices):
-        PLANNED = 'planned', 'Запланировано'
-        READING = 'reading', 'Читаю'
-        COMPLETED = 'completed', 'Прочитано'
-        ABANDONED = 'abandoned', 'Брошено' 
-    
+        PLANNED = "planned", "Запланировано"
+        READING = "reading", "Читаю"
+        COMPLETED = "completed", "Прочитано"
+        ABANDONED = "abandoned", "Брошено"
+
     user = models.ForeignKey(
-        UserModels, 
-        on_delete=models.CASCADE, 
-        related_name='user_books',
-        verbose_name="Пользователь"
+        UserModels,
+        on_delete=models.CASCADE,
+        related_name="user_books",
+        verbose_name="Пользователь",
     )
     book = models.ForeignKey(
-        BookModels, 
-        on_delete=models.CASCADE, 
-        related_name='user_books',
-        verbose_name="Книга"
+        BookModels,
+        on_delete=models.CASCADE,
+        related_name="user_books",
+        verbose_name="Книга",
     )
 
     reading_status = models.CharField(
@@ -49,37 +51,23 @@ class UserBookModels(models.Model):
         default=ReadingStatus.PLANNED,
     )
     current_page = models.PositiveSmallIntegerField(
-        "Текущая страница",
-        null=True, 
-        blank=True
+        "Текущая страница", null=True, blank=True
     )
     rating = models.PositiveSmallIntegerField(
         "Оценка",
         null=True,
         blank=True,
-        validators=[MinValueValidator(1), MaxValueValidator(5)]
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
     )
-    review = models.TextField(
-        "Отзыв",
-        blank=True
-    )
-    is_public = models.BooleanField(
-        "Публичная",
-        default=True
-    )
-    created_at = models.DateTimeField(
-        "Дата добавления",
-        auto_now_add=True
-    )
+    review = models.TextField("Отзыв", blank=True)
+    is_public = models.BooleanField("Публичная", default=True)
+    created_at = models.DateTimeField("Дата добавления", auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'book')
-        ordering = ['-created_at']
+        unique_together = ("user", "book")
+        ordering = ["-created_at"]
         verbose_name = "книгу пользователя"
         verbose_name_plural = "Книги пользователей"
 
-
-'''
     def __str__(self):
         return self.user, self.book
-'''

@@ -10,17 +10,14 @@ class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email обязателен")
-        
+
         email = self.normalize_email(email)
 
         extra_fields.setdefault("is_active", False)
         extra_fields.setdefault("is_email_verified", False)
 
-        user = self.model(
-        email=email,
-        **extra_fields
-        )        
-        
+        user = self.model(email=email, **extra_fields)
+
         user.set_password(password)
         user.save()
         return user
@@ -50,7 +47,7 @@ class UserModels(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-    
+
     class Meta:
         verbose_name = "пользователя"
         verbose_name_plural = "Пользователи"

@@ -1,38 +1,36 @@
-from ninja import Router
+from typing import List, Optional
+
+from books.models import UserBookModels
 from books.schema import (
-    BookUserSchemaIn,
+    BookUserAndBooksSchemaOut,
     BookUserSchemaOut,
     BookUserTestSchemaIn,
     ErrorSchema,
     SuccessfulSchema,
-    BookUserAndBooksSchemaOut,
 )
-from books.models import UserBookModels
-from typing import List, Optional
 from django.shortcuts import get_object_or_404
+from ninja import Router
 from ninja_jwt.authentication import JWTAuth
-
 
 api = Router(tags=["User_Books"])
 
 
-
 @api.get(
-        "/full/",
-        auth=JWTAuth(),
-        response={
+    "/full/",
+    auth=JWTAuth(),
+    response={
         200: List[BookUserAndBooksSchemaOut],
         401: ErrorSchema,
-        }
-    )
+    },
+)
 def list_user_books_full(
-        request,
-        me: Optional[bool] = False,
-        authors: Optional[str] = None,
-        status: Optional[str] = None, 
-        user_book_id: Optional[int] = None,   
-        title: Optional[str] = None
-    ):
+    request,
+    me: Optional[bool] = False,
+    authors: Optional[str] = None,
+    status: Optional[str] = None,
+    user_book_id: Optional[int] = None,
+    title: Optional[str] = None,
+):
     """
     List UserBooks.
     - ?me=true → только текущий пользователь
@@ -48,10 +46,10 @@ def list_user_books_full(
 
     if status:
         qs = qs.filter(reading_status=status)
-    
+
     if user_book_id:
         qs = qs.filter(id=user_book_id)
-    
+
     if title:
         qs = qs.filter(title=title)
 
@@ -59,41 +57,36 @@ def list_user_books_full(
 
 
 @api.post(
-        "/",
-        auth=JWTAuth(),
-        response={200: BookUserSchemaOut, 409: ErrorSchema},
-    )
+    "/",
+    auth=JWTAuth(),
+    response={200: BookUserSchemaOut, 409: ErrorSchema},
+)
 def create_user_book(request, payload: BookUserTestSchemaIn):
     if UserBookModels.objects.filter(
-        book_id=payload.book_id,
-        user=request.user
+        book_id=payload.book_id, user=request.user
     ).exists():
         return 409, {"detail": "Book with this ID already exists"}
-    user_book = UserBookModels.objects.create(
-        user=request.user,
-        **payload.dict()
-    )   
-
+    user_book = UserBookModels.objects.create(user=request.user, **payload.dict())
 
     return user_book
 
 
 @api.get(
-        "/",
-        auth=JWTAuth(),
-        response={
-            200: List[BookUserSchemaOut],
-            401: ErrorSchema,      
-        }
-    )
+    "/",
+    auth=JWTAuth(),
+    response={
+        200: List[BookUserSchemaOut],
+        401: ErrorSchema,
+    },
+)
 def list_users_book(
-    request,        
+    request,
     me: Optional[bool] = True,
     authors: Optional[str] = None,
-    status: Optional[str] = None, 
-    user_book_id: Optional[int] = None,   
+    status: Optional[str] = None,
+    user_book_id: Optional[int] = None,
     title: Optional[str] = None,
-    ):
+):
     qs = UserBookModels.objects.all()
 
     if me:
@@ -104,27 +97,25 @@ def list_users_book(
 
     if status:
         qs = qs.filter(reading_status=status)
-    
+
     if user_book_id:
         qs = qs.filter(id=user_book_id)
-    
+
     if title:
         qs = qs.filter(title=title)
-
 
     return qs
 
 
-
 @api.put(
-        "/{user_book_id}/",
-        auth=JWTAuth(),
-        response={
-            200: BookUserSchemaOut,
-            404: ErrorSchema,
-            403: ErrorSchema,
-        }
-    )
+    "/{user_book_id}/",
+    auth=JWTAuth(),
+    response={
+        200: BookUserSchemaOut,
+        404: ErrorSchema,
+        403: ErrorSchema,
+    },
+)
 def update_user_book(request, user_book_id: int, payload: BookUserTestSchemaIn):
     user_book = UserBookModels.objects.filter(id=user_book_id).first()
     if not user_book:
@@ -140,20 +131,20 @@ def update_user_book(request, user_book_id: int, payload: BookUserTestSchemaIn):
 
 
 @api.delete(
-        "/{user_book_id}/",
-        auth=JWTAuth(),
-        response={
-            200: SuccessfulSchema,
-            404: ErrorSchema,
-            403: ErrorSchema,
-        }
-    )
+    "/{user_book_id}/",
+    auth=JWTAuth(),
+    response={
+        200: SuccessfulSchema,
+        404: ErrorSchema,
+        403: ErrorSchema,
+    },
+)
 def delete_user_book(request, user_book_id: int):
     user_book = get_object_or_404(UserBookModels, id=user_book_id)
 
     if user_book.user != request.user and not request.user.is_superuser:
         return 403, {"detail": "Forbidden"}
-    
+
     user_book.delete()
     return 200, {"detail": "The post was successfully deleted"}
 
@@ -168,7 +159,7 @@ def delete_user_book(request, user_book_id: int):
 #     result = []
 
 #     for item in user_books:
-#         book = item.book  
+#         book = item.book
 #         result.append(BookUserAndBooksSchemaOut(
 #             user_book=item.id,
 #             book_id=book.id,
@@ -209,6 +200,3 @@ def delete_user_book(request, user_book_id: int):
 #     # )
 
 #     # return "OK"
-
-
-

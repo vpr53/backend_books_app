@@ -1,18 +1,19 @@
 from urllib.parse import urlencode
+
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.utils.timezone import now
-from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from django.contrib.auth.tokens import default_token_generator
-from django.conf import settings
+from django.utils.http import urlsafe_base64_encode
+from django.utils.timezone import now
 
 
 def send_action_email(
     *,
     user,
     request,
-    path: str,         
+    path: str,
     subject: str,
     template: str,
     msg: str,

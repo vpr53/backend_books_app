@@ -6,30 +6,64 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('books', '0001_initial'),
+        ("books", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CommentModels',
+            name="CommentModels",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.TextField(verbose_name='Текст')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Опубликован')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Обновлён')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to=settings.AUTH_USER_MODEL, verbose_name='Автор')),
-                ('user_book', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='books.userbookmodels', verbose_name='Книга пользователя')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("text", models.TextField(verbose_name="Текст")),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, verbose_name="Опубликован"),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="Обновлён"),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="comments",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Автор",
+                    ),
+                ),
+                (
+                    "user_book",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="comments",
+                        to="books.userbookmodels",
+                        verbose_name="Книга пользователя",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Комментарий',
-                'verbose_name_plural': 'Комментарии',
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['user_book', 'created_at'], name='comments_co_user_bo_4409ae_idx')],
+                "verbose_name": "Комментарий",
+                "verbose_name_plural": "Комментарии",
+                "ordering": ["-created_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["user_book", "created_at"],
+                        name="comments_co_user_bo_4409ae_idx",
+                    )
+                ],
             },
         ),
     ]

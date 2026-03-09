@@ -1,36 +1,28 @@
-from ninja import Router
-from ninja.errors import HttpError
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth import authenticate
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_str
-
 from accounts.models import UserModels
 from accounts.schema import (
-    RegisterSchema, 
-    LoginSchema,
     AcsessRefrashSchema,
     ErrorSchema,
-    SuccessfulSchema,
-    PasswordResetInSchema,
+    LoginSchema,
     PasswordResetCompleteSchema,
-    )
-from ....api.v1.accounts.utils import send_action_email
-
+    PasswordResetInSchema,
+    RegisterSchema,
+    SuccessfulSchema,
+)
+from django.contrib.auth import authenticate
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+from ninja import Router
+from ninja.errors import HttpError
 from ninja_jwt.tokens import RefreshToken
 
+from ....api.v1.accounts.utils import send_action_email
 
 api = Router(tags=["Auth"])
 
 
-
-@api.post(
-        "/register/",
-        response={201: SuccessfulSchema, 409: ErrorSchema}
-    )
+@api.post("/register/", response={201: SuccessfulSchema, 409: ErrorSchema})
 def register(request, payload: RegisterSchema):
-
     if UserModels.objects.filter(email=payload.email).exists():
         raise HttpError(409, "Email already registered")
 
@@ -42,7 +34,7 @@ def register(request, payload: RegisterSchema):
     send_action_email(
         user=user,
         request=request,
-        path="/api/auth/verify-email", 
+        path="/api/auth/verify-email",
         subject="Подтвердите регистрацию",
         template="emails/verify_email.html",
         msg="Если вы не регистрировались — просто проигнорируйте письмо.",
@@ -58,7 +50,7 @@ def register(request, payload: RegisterSchema):
         400: ErrorSchema,
     },
     summary="Подтверждение email",
-    description="Проверяет ссылку подтверждения email и активирует пользователя"
+    description="Проверяет ссылку подтверждения email и активирует пользователя",
 )
 def verify_email(request, uid: str, token: str):
     try:
@@ -84,13 +76,12 @@ def login(request, payload: LoginSchema):
     user = authenticate(request, username=payload.email, password=payload.password)
     if not user:
         raise HttpError(400, "Email or password not valid")
-    
 
     refresh = RefreshToken.for_user(user)
 
     return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
+        "refresh": str(refresh),
+        "access": str(refresh.access_token),
     }
 
 
@@ -110,10 +101,7 @@ def password_reset(request, payload: PasswordResetInSchema):
     return {"detail": "If account exists, email was sent"}
 
 
-@api.get(
-        "password-reset/confirm/",
-        response={200: SuccessfulSchema, 400: ErrorSchema}
-    )
+@api.get("password-reset/confirm/", response={200: SuccessfulSchema, 400: ErrorSchema})
 def password_reset_confirm(request, uid, token):
     if not uid or not token:
         return 400, {"detail": "Invalid link"}
@@ -124,29 +112,28 @@ def password_reset_confirm(request, uid, token):
         return 400, {"detail": "Invalid link"}
 
     if not default_token_generator.check_token(user, token):
-            return 400, {"detail": "Invalid or expired token"}
+        return 400, {"detail": "Invalid or expired token"}
 
     return 200, {"detail": "Token valid"}
 
 
 @api.post(
-        "password-reset/complete/",
-        response={200: SuccessfulSchema, 400: ErrorSchema}
-    )
+    "password-reset/complete/", response={200: SuccessfulSchema, 400: ErrorSchema}
+)
 def password_reset_complete(request, payload: PasswordResetCompleteSchema):
-        user_id = force_str(urlsafe_base64_decode(payload.uid))
-        user = UserModels.objects.filter(pk=user_id).first()
+    user_id = force_str(urlsafe_base64_decode(payload.uid))
+    user = UserModels.objects.filter(pk=user_id).first()
 
-        if not user:
-            return 400, {"detail": "Invalid link"}
-        
-        if not default_token_generator.check_token(user, payload.token):
-            return 400, {"detail": "Invalid or expired token"},
+    if not user:
+        return 400, {"detail": "Invalid link"}
 
+    if not default_token_generator.check_token(user, payload.token):
+        return (
+            400,
+            {"detail": "Invalid or expired token"},
+        )
 
-        user.set_password(payload.new_password)
-        user.save()
+    user.set_password(payload.new_password)
+    user.save()
 
-        return {"detail": "Password successfully updated"}
-
-    
+    return {"detail": "Password successfully updated"}

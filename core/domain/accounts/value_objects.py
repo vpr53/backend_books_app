@@ -1,5 +1,6 @@
 import base64
 
+
 class UserId:
     def __init__(self, uid: int):
         if uid <= 0:
@@ -20,7 +21,7 @@ class UserId:
             return cls(uid)
         except Exception:
             raise ValueError("Неверный UID")
-    
+
     def __eq__(self, other):
         if not isinstance(other, UserId):
             return False

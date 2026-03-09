@@ -1,35 +1,29 @@
-from abc import ABC
 import secrets
+from abc import ABC
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
-from django.utils.timezone import now
-from django.template.loader import render_to_string
 from django.core.cache import cache
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.timezone import now
 
-from core.domain.accounts.service import BaseTokenSenderService
-from core.domain.accounts.value_objects import UserId, Token
 from core.domain.accounts.entity import User
+from core.domain.accounts.service import BaseTokenSenderService
+from core.domain.accounts.value_objects import Token, UserId
 
 
 class BaseEmailTokenSenderService(BaseTokenSenderService, ABC):
-
     path: str = ""
     template: str = ""
     subject: str = ""
     msg: str = ""
 
     def send_token(self, email: str, user_id: UserId, token: Token) -> None:
-
         query = urlencode({"uid": user_id, "token": token})
         action_url = f"{settings.BASE_URL}{self.path}?{query}"
 
-        context = {
-            "action_url": action_url,
-            "year": now().year,
-            "msg": self.msg
-        }
+        context = {"action_url": action_url, "year": now().year, "msg": self.msg}
 
         text_content = f"{self.subject}\n\n{action_url}\n\n{self.msg}"
         html_content = render_to_string(self.template, context)
@@ -52,10 +46,9 @@ class BaseEmailTokenSenderService(BaseTokenSenderService, ABC):
     def check_token(self, user: User, token: Token) -> bool:
         cache_token = cache.get(f"user_token:{user.user_id}")
         return cache_token == token
-    
+
 
 class EmailVerifySenderService(BaseEmailTokenSenderService):
-
     path = "/api/auth/verify-email"
     template = "emails/verify_email.html"
     subject = "Подтвердите регистрацию"
@@ -63,8 +56,7 @@ class EmailVerifySenderService(BaseEmailTokenSenderService):
 
 
 class VerifyPasswordSenderService(BaseEmailTokenSenderService):
-
     path = "/api/auth/reset-password"
-    template="emails/password_reset.html"
+    template = "emails/password_reset.html"
     subject = "Сброс пароля"
-    msg = "Если вы не запрашивали сброс пароля — проигнорируйте письмо." 
+    msg = "Если вы не запрашивали сброс пароля — проигнорируйте письмо."
