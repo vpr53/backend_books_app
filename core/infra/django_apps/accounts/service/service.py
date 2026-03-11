@@ -10,7 +10,7 @@ from django.utils.timezone import now
 
 from core.domain.accounts.entity import User
 from core.domain.accounts.service import BaseTokenSenderService
-from core.domain.accounts.value_objects import Token, UserId
+from core.domain.accounts.value_objects import Token
 
 
 class BaseEmailTokenSenderService(BaseTokenSenderService, ABC):
@@ -19,8 +19,8 @@ class BaseEmailTokenSenderService(BaseTokenSenderService, ABC):
     subject: str = ""
     msg: str = ""
 
-    def send_token(self, email: str, user_id: UserId, token: Token) -> None:
-        query = urlencode({"uid": user_id, "token": token})
+    def send_token(self, email: str, user_id: str, token: Token) -> None:
+        query = urlencode({"uid": user_id, "token": token.value})
         action_url = f"{settings.BASE_URL}{self.path}?{query}"
 
         context = {"action_url": action_url, "year": now().year, "msg": self.msg}
@@ -56,7 +56,7 @@ class EmailVerifySenderService(BaseEmailTokenSenderService):
 
 
 class VerifyPasswordSenderService(BaseEmailTokenSenderService):
-    path = "/api/auth/reset-password"
+    path = "/api/auth/password-reset/confirm"
     template = "emails/password_reset.html"
     subject = "Сброс пароля"
     msg = "Если вы не запрашивали сброс пароля — проигнорируйте письмо."

@@ -1,18 +1,20 @@
-import django.utils.encoding
-from django.contrib.auth import authenticate
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_decode
 from ninja import Router
 from ninja.errors import HttpError
 from ninja_jwt.tokens import RefreshToken
 
 from core.applications.accounts.use_case import (
+    LoginUseCase,
+    PasswordResetCompleteUseCase,
+    PasswordResetConfirmUseCase,
+    PasswordResetUseCase,
     RegisterUseCase,
+    VerifyEmailUseCase,
 )
 from core.domain.accounts.exeptions import (
+    InvalidTokenError,
     UserAlreadyExistsError,
+    UserNotFoundError,
 )
-from core.infra.django_apps.accounts.models import UserModels
 from core.infra.django_apps.accounts.repository import DjangoAccountsRepository
 from core.infra.django_apps.accounts.schema import (
     AcsessRefrashSchema,
@@ -25,9 +27,8 @@ from core.infra.django_apps.accounts.schema import (
 )
 from core.infra.django_apps.accounts.service.service import (
     EmailVerifySenderService,
+    VerifyPasswordSenderService,
 )
-
-from .utils import send_action_email
 
 api = Router(tags=["Auth"])
 
@@ -35,31 +36,13 @@ api = Router(tags=["Auth"])
 @api.post("/register/", response={201: SuccessfulSchema, 409: ErrorSchema})
 def register(request, payload: RegisterSchema):
     use_case = RegisterUseCase(
-        repo=DjangoAccountsRepository,
-        token_send_service=EmailVerifySenderService,
+        repo=DjangoAccountsRepository(),
+        token_send_service=EmailVerifySenderService(),
     )
-
     try:
         use_case.execute(payload.email, payload.password)
     except UserAlreadyExistsError:
-        return 409, {"detail": "Email already registered"}
-
-    # if UserModels.objects.filter(email=payload.email).exists():
-    #     raise HttpError(409, "Email already registered")
-
-    # user = UserModels.objects.create_user(
-    #     **payload.dict(),
-    #     is_active=False,
-    # )
-
-    # send_action_email(
-    #     user=user,
-    #     request=request,
-    #     path="/api/auth/verify-email",
-    #     subject="Подтвердите регистрацию",
-    #     template="emails/verify_email.html",
-    #     msg="Если вы не регистрировались — просто проигнорируйте письмо.",
-    # )
+        raise HttpError(409, "Email already registered")
 
     return 201, {"detail": "Check your email to verify account"}
 
@@ -74,31 +57,33 @@ def register(request, payload: RegisterSchema):
     description="Проверяет ссылку подтверждения email и активирует пользователя",
 )
 def verify_email(request, uid: str, token: str):
+    use_case = VerifyEmailUseCase(
+        repo=DjangoAccountsRepository(),
+        token_send_service=EmailVerifySenderService(),
+    )
     try:
-        user_id = django.utils.encoding.force_str(urlsafe_base64_decode(uid))
-        user = UserModels.objects.get(pk=user_id)
-    except (UserModels.DoesNotExist, ValueError, TypeError):
+        use_case.execute(uid, token)
+    except InvalidTokenError:
         raise HttpError(400, "Invalid verification link")
 
-    if not default_token_generator.check_token(user, token):
+    except UserNotFoundError:
         raise HttpError(400, "Invalid or expired token")
-
-    if user.is_active:
-        return {"detail": "Email already verified"}
-
-    user.is_active = True
-    user.save(update_fields=["is_active"])
 
     return {"detail": "Email successfully verified"}
 
 
 @api.post("/login/", response={200: AcsessRefrashSchema, 400: ErrorSchema})
 def login(request, payload: LoginSchema):
-    user = authenticate(request, username=payload.email, password=payload.password)
-    if not user:
+    repo = DjangoAccountsRepository()
+    use_case = LoginUseCase(repo=repo)
+
+    try:
+        user = use_case.execute(payload.email, payload.password)
+    except UserNotFoundError:
         raise HttpError(400, "Email or password not valid")
 
-    refresh = RefreshToken.for_user(user)
+    dj_user = repo.get_django_user_by_id(user_id=user.user_id)
+    refresh = RefreshToken.for_user(dj_user)
 
     return {
         "refresh": str(refresh),
@@ -108,32 +93,29 @@ def login(request, payload: LoginSchema):
 
 @api.post("password-reset/", response={200: SuccessfulSchema})
 def password_reset(request, payload: PasswordResetInSchema):
-    user = UserModels.objects.filter(email=payload.email).first()
-
-    if user:
-        send_action_email(
-            user=user,
-            request=request,
-            path="/api/auth/password-reset/confirm",
-            subject="Сброс пароля",
-            template="emails/password_reset.html",
-            msg="Если вы не запрашивали смену пароля — просто проигнорируйте письмо.",
-        )
+    use_case = PasswordResetUseCase(
+        repo=DjangoAccountsRepository(),
+        token_send_service=VerifyPasswordSenderService(),
+    )
+    try:
+        use_case.execute(payload.email)
+    except UserNotFoundError:
+        return {"detail": "If account exists, email was sent"}
     return {"detail": "If account exists, email was sent"}
 
 
 @api.get("password-reset/confirm/", response={200: SuccessfulSchema, 400: ErrorSchema})
 def password_reset_confirm(request, uid, token):
-    if not uid or not token:
-        return 400, {"detail": "Invalid link"}
-    user_id = django.utils.encoding.force_str(urlsafe_base64_decode(uid))
-    user = UserModels.objects.filter(pk=user_id).first()
-
-    if not user:
-        return 400, {"detail": "Invalid link"}
-
-    if not default_token_generator.check_token(user, token):
-        return 400, {"detail": "Invalid or expired token"}
+    use_case = PasswordResetConfirmUseCase(
+        repo=DjangoAccountsRepository(),
+        token_service=VerifyPasswordSenderService(),
+    )
+    try:
+        use_case.execute(user_id=uid, token=token)
+    except UserNotFoundError:
+        raise HttpError(400, "Invalid or expired token")
+    except InvalidTokenError:
+        raise HttpError(400, "Invalid link")
 
     return 200, {"detail": "Token valid"}
 
@@ -142,19 +124,17 @@ def password_reset_confirm(request, uid, token):
     "password-reset/complete/", response={200: SuccessfulSchema, 400: ErrorSchema}
 )
 def password_reset_complete(request, payload: PasswordResetCompleteSchema):
-    user_id = django.utils.encoding.force_str(urlsafe_base64_decode(payload.uid))
-    user = UserModels.objects.filter(pk=user_id).first()
-
-    if not user:
-        return 400, {"detail": "Invalid link"}
-
-    if not default_token_generator.check_token(user, payload.token):
-        return (
-            400,
-            {"detail": "Invalid or expired token"},
+    use_case = PasswordResetCompleteUseCase(
+        repo=DjangoAccountsRepository(),
+        token_service=VerifyPasswordSenderService(),
+    )
+    try:
+        use_case.execute(
+            user_id=payload.uid, token=payload.token, password=payload.new_password
         )
-
-    user.set_password(payload.new_password)
-    user.save()
+    except UserNotFoundError:
+        raise HttpError(400, "Invalid or expired token")
+    except InvalidTokenError:
+        raise HttpError(400, "Invalid link")
 
     return {"detail": "Password successfully updated"}

@@ -1,4 +1,5 @@
 import base64
+from urllib.parse import unquote
 
 
 class UserId:
@@ -17,10 +18,12 @@ class UserId:
     @classmethod
     def decode(cls, uid_str: str):
         try:
-            uid = int(base64.urlsafe_b64decode(uid_str.encode()).decode())
+            decoded_uid_str = unquote(uid_str)
+
+            uid = int(base64.urlsafe_b64decode(decoded_uid_str.encode()).decode())
             return cls(uid)
-        except Exception:
-            raise ValueError("Неверный UID")
+        except Exception as e:
+            raise ValueError("Неверный UID") from e
 
     def __eq__(self, other):
         if not isinstance(other, UserId):
@@ -42,9 +45,17 @@ class Token:
         return self._token
 
     def __eq__(self, other):
-        if not isinstance(other, Token):
-            return False
-        return self._token == other._token
+        return self._token == other
 
     def __repr__(self):
         return f"Token({self._token})"
+
+
+# u_id = UserId(15)
+# print(u_id.value)
+
+# u_id = "MTE%3D"
+# # u_id = u_id.encode()
+# # print(u_id)
+
+# print(UserId.decode(u_id).value)

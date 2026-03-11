@@ -12,7 +12,7 @@ SIMPLE_JWT = {
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-BASE_URL = "https://127.0.0.1"
+BASE_URL = "http://127.0.0.1:8000"
 
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = True
@@ -53,7 +53,7 @@ ROOT_URLCONF = "core.project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [BASE_DIR / "infra" / "django_apps" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

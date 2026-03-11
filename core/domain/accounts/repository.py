@@ -25,5 +25,5 @@ class BaseAccountsRepository(ABC):
         ...
 
     @abstractmethod
-    def is_verify_pass(self, user: User, password: str) -> bool:
+    def is_verify_pass(self, email: str, password: str) -> bool:
         ...

@@ -43,13 +43,10 @@ class DjangoAccountsRepository(BaseAccountsRepository):
         db_user = UserModels.objects.filter(email=email).first()
         return self._to_entity(db_user)
 
-    def is_verify_pass(self, email: str, password: str) -> User | None:
+    def is_verify_pass(self, email: str, password: str) -> bool:
         db_user = UserModels.objects.filter(email=email).first()
 
-        if not db_user:
-            return None
+        return db_user.check_password(password)
 
-        if not db_user.check_password(password):
-            return None
-
-        return self._to_entity(db_user)
+    def get_django_user_by_id(self, user_id: int):
+        return UserModels.objects.get(id=user_id)

@@ -1,7 +1,7 @@
 from core.applications.accounts.dto import SendTokenResultDTO
-from core.applications.accounts.service import TokenValidatorService
 from core.domain.accounts.entity import User
 from core.domain.accounts.exeptions import (
+    EmailNotVerifiedError,
     InvalidTokenError,
     UserAlreadyExistsError,
     UserNotFoundError,
@@ -30,9 +30,10 @@ class RegisterUseCase:
 
         self.repo.save(user)
 
-        token = self.token_send_service.generate_token(user)
+        token = self.token_send_service.generate_and_save_token(user)
 
-        self.token_send_service.send_token(email, user.user_id.encode(), token)
+        u_id = UserId(user.user_id)
+        self.token_send_service.send_token(email, u_id.encode(), token)
 
         return user
 
@@ -57,7 +58,8 @@ class VerifyEmailUseCase:
             raise UserNotFoundError()
 
         token = Token(token_str)
-        if not self.token_send_service.check_token(user, token):
+
+        if not self.token_send_service.check_token(user, token.value):
             raise InvalidTokenError()
 
         user.verify_email()
@@ -73,12 +75,16 @@ class LoginUseCase:
         self.repo = repo
 
     def execute(self, email: str, password: str):
-        user = self.repo.is_verify_pass(
-            email,
-            password,
-        )
+        user = self.repo.get_by_email(email)
         if not user:
             raise UserNotFoundError()
+
+        if not user.is_email_verified:
+            raise EmailNotVerifiedError()
+
+        if not self.repo.is_verify_pass(email, password):
+            raise UserNotFoundError()
+
         return user
 
 
@@ -96,31 +102,61 @@ class PasswordResetUseCase:
         if not user:
             raise UserNotFoundError()
 
-        token = self.token_send_service.generate_token(user)
+        token = self.token_send_service.generate_and_save_token(user)
+
+        u_id = UserId(user.user_id)
 
         self.token_send_service.send_token(
-            email=email, user_id=user.user_id.encode(), token=token
+            email=email, user_id=u_id.encode(), token=token
         )
 
         return SendTokenResultDTO(success=True)
 
 
-class PasswordResetConfirm:
-    def __init__(self, validator: TokenValidatorService):
-        self.validator = validator
+class PasswordResetConfirmUseCase:
+    def __init__(
+        self, repo: BaseAccountsRepository, token_service: BaseTokenSenderService
+    ):
+        self.repo = repo
+        self.token_service = token_service
 
     def execute(self, user_id: str, token: str):
-        self.validator.validate_user_and_token(user_id, token)
+        try:
+            db_id = UserId.decode(user_id).value
+        except ValueError:
+            raise InvalidTokenError()
+
+        user = self.repo.get_by_id(db_id)
+        if not user:
+            raise UserNotFoundError()
+
+        token = Token(token)
+        if not self.token_service.check_token(user, token):
+            raise InvalidTokenError()
+
         return SendTokenResultDTO(success=True)
 
 
 class PasswordResetCompleteUseCase:
-    def __init__(self, validator: TokenValidatorService, repo: BaseAccountsRepository):
-        self.validator = validator
+    def __init__(
+        self, repo: BaseAccountsRepository, token_service: BaseTokenSenderService
+    ):
         self.repo = repo
+        self.token_service = token_service
 
     def execute(self, user_id: str, token: str, password: str):
-        user = self.validator.validate_user_and_token(user_id, token)
+        try:
+            db_id = UserId.decode(user_id).value
+        except ValueError:
+            raise InvalidTokenError()
+
+        user = self.repo.get_by_id(db_id)
+        if not user:
+            raise UserNotFoundError()
+
+        token = Token(token)
+        if not self.token_service.check_token(user, token):
+            raise InvalidTokenError()
 
         user.password = password
         self.repo.save(user)
