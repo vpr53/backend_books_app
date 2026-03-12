@@ -17,6 +17,11 @@ class CommentModels(models.Model):
         related_name="comments",
         verbose_name="Автор",
     )
+
+    parent = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
+    )
+
     text = models.TextField("Текст")
 
     created_at = models.DateTimeField("Опубликован", auto_now_add=True)
