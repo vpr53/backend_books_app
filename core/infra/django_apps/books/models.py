@@ -14,7 +14,7 @@ class BookModels(models.Model):
     )
     cover_url = models.URLField("Обложка", blank=True)
     authors = models.CharField("Авторы", max_length=255, blank=True)
-    categories = models.CharField("Жанры", max_length=255, blank=True)
+    categories = models.CharField(max_length=100, default="other")
 
     class Meta:
         verbose_name = "книгу"
