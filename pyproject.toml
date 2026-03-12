@@ -23,6 +23,11 @@ dependencies = [
     "pytest (>=9.0.2,<10.0.0)",
     "pytest-django (>=4.11.1,<5.0.0)",
     "coverage (>=7.13.2,<8.0.0)",
+    "passlib (>=1.7.4,<2.0.0)",
+    "redis (>=7.2.1,<8.0.0)",
+    "django-redis (>=6.0.0,<7.0.0)",
+    "black (>=26.3.0,<27.0.0)",
+    "pre-commit (>=4.5.1,<5.0.0)",
 ]
 
 
@@ -34,22 +39,30 @@ build-backend = "poetry.core.masonry.api"
 line-length = 88
 target-version = "py312"
 
-# Что проверять
+# Проверяем только ошибки PEP8, связанные с комментариями
 select = [
-    "E",   # ошибки PEP8
-    "F",   # ошибки (unused imports, undefined names)
+    "E",   # базовые ошибки PEP8 (включает E262, E265 для комментариев)
+    "F",   # ошибки кода (undefined, unused)
     "I",   # сортировка импортов
     "DJ",  # Django-правила
 ]
 
-# Что игнорировать
+# Игнорируем проверки docstring
 ignore = [
-    "DJ001",  # allow null=True on CharField
+    "D100",  # Missing docstring in module
+    "D101",  # Missing docstring in class
+    "D102",  # Missing docstring in __init__
+    "D103",  # Missing docstring in public function
+    "D104",  # Missing docstring in public method
+    "D105",  # Missing docstring in magic method
+    "D106",  # Missing docstring in public nested class
+    "D107",  # Missing docstring in __init__ method
 ]
 
-# Какие папки не трогать
+# Папки, которые не трогаем
 exclude = [
     ".venv",
     "migrations",
     "__pycache__",
+    "settings.py",
 ]
