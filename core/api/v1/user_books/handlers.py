@@ -80,6 +80,7 @@ def list_users_book(
     authors: Optional[str] = None,
     status: Optional[str] = None,
     user_book_id: Optional[int] = None,
+    book_id: Optional[int] = None,
     title: Optional[str] = None,
 ):
     qs = UserBookModels.objects.all()
@@ -99,6 +100,8 @@ def list_users_book(
     if title:
         qs = qs.filter(title=title)
 
+    if book_id:
+        qs = qs.filter(book=book_id)
     return qs
 
 
